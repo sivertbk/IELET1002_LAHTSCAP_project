@@ -1,85 +1,47 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Apr 12 15:39:59 2021
-
-@author: si_ve
-"""
 from datetime import *
 from CoT import *
 
 
-#### Plant thirst levels ####---------------------------------------------------------------------------
-# All values have a moisture range from 0% too 100%
-# water need thresholds
-soil_threshold_hella_thirsty = 90
-soil_threshold_normal_thirsty = 60
-soil_threshold_kinda_thirsty = 400
-soil_threshold_low_thirsty = 250
-soil_threshold_cactus = 100
-
-
-# water need dict
-water_requirement = {'hella thirsty':soil_threshold_hella_thirsty,
-                     'normal thirsty':soil_threshold_normal_thirsty,
-                     'kinda thirsty':soil_threshold_kinda_thirsty,
-                     'low thirsty':soil_threshold_low_thirsty,
-                     'cactus':soil_threshold_cactus
+#### Options of water requirement for a plant ####---------------------------------------------------------------------------
+# All values have a moisture range from 0% to 100%
+# Dictionary with thresholds value of how much water a plants need based on its soil moisture. 
+water_requirement = {'high moisture':90,
+                     'decent moisture':60,
+                     'normal moisture':40,
+                     'low moisture':25,
+                     'cactus':10
                      }
 
 
 
-#### Plant light levels ####--------------------------------------------------------------------------
-
-# Light requirement thresholds
-light_threshold_cactus = 1000
-light_threshold_bright = 700
-light_threshold_shadow = 400
-
-
-# light need dict
-light_requirement = {'cactus':light_threshold_cactus,
-                     'bright':light_threshold_bright,
-                     'shadow':light_threshold_shadow
+#### Options of light requirements for a plant ####--------------------------------------------------------------------------
+# Dictionary with thresholds value of how much light the plant needs. 
+light_requirement = {'cactus':1000,
+                     'bright':700,
+                     'shadow':400
                      }
 
-#### Plant temp levels ####---------------------------------------------------------------------------
-
-# Temp ranges  (All values are in celcius where the first value of the list is the minimum temp the plant
-#               can tolarate and last value of the list is the bare maximum temp.)
-temp_range_cactus = [7,29]
-temp_range_room = [16,26]
-temp_range_picky = [20,24]
-
-
-# Temp range dict
-temp_range = {'cactus':temp_range_cactus,
-              'room':temp_range_room,
-              'picky':temp_range_picky
+#### Options of temperature range for a plant ####---------------------------------------------------------------------------
+# Dictionary with [min, max] temperature thresholds for a plant
+temp_range = {'cactus':[7,29],
+              'room':[16,26],
+              'picky':[20,24]
               }
 
 
-
-#### Plant humidity levels ####------------------------------------------------------------------------
-
-# humidity ranges (All values are in relative humidity [% rH],
-#                they are the minimum humidity level where the plant trives)
-humid_threshold_moist = 50
-humid_threshold_normal = 30
-humid_threshold_cactus = 20
-
-
-# humid threshold dict
-humid_requirement = {'moist':humid_threshold_moist,
-                     'normal':humid_threshold_normal,
-                     'cactus':humid_threshold_cactus
+#### Options of humid requirement for a plant ####------------------------------------------------------------------------
+# Dictionary with threshold value for minimum humidity (in [% rH]) where a plant thrives
+humid_requirement = {'moist':50,
+                     'normal':30,
+                     'cactus':20
                      }
 
 
-#### plant status dict (Up too 8 plants.) ####--------------------------------------------------------------------------
+#### Dictionary of up to 8 plants with it's each own dictionary of the plants status ####--------------------------------------------------------------------------
 
 # example: get soil value of plant 0 ---> plant[0]['soil_value'] gives the value(number) of plant 0.
 plant = {0:
-         {'water_requirement':water_requirement['hella thirsty'],
+         {'water_requirement':water_requirement['high moisture'],
           'soil_value':soil_key.get()["Value"],
           'last_soil_measure':soil_key.get()["LastValueTime"],
           'water':False, # Values from 0 - 5 wich describes how much water the plant is getting from signal
@@ -102,8 +64,8 @@ plant = {0:
          }
 
 
-#### testing ####-------------------------------------------------------------------------------------------------------
-
-print(datetime.fromtimestamp(plant[0]['last_water']/1000).strftime('%Y-%m-%d %H:%M:%S'))
-print(plant[0]['temp_value'])
-print(plant[0]['water_requirement'])
+if __name__ == "__main__":
+    
+    print(datetime.fromtimestamp(plant[0]['last_water']/1000).strftime('%Y-%m-%d %H:%M:%S'))
+    print(plant[0]['temp_value'])
+    print(plant[0]['water_requirement'])
