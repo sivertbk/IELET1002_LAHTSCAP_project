@@ -29,27 +29,33 @@ print(plant_sensor_status('0','soil'))
 
 
 # Get timestamp for soil last_soil_measure
-def plant_statusflag_timestamp(str(plant_name), str(statusflag), str(timeformat)):
+def plant_statusflag_timestamp(plant_name, statusflag, timeformat):
+    # This function takes 3 arguments and returns a timestamp from given plant and its status to be timestamped
+    # Choose plant, statusflag and what timeformat it should return.
+    plant_name = str(plant_name)
+    statusflag = str(statusflag)
+    timeformat = str(timeformat)
+
     if plant_name in plant:
-        if statusflag in plant:
-            timestamp = plant[plant]
+        if statusflag in plant[plant_name]:
             if timeformat == 'epoch':
                 timestamp = plant[plant_name][statusflag]
             elif timeformat == 'datetime':
-
                 timestamp = print(datetime.fromtimestamp(
                                     plant[plant_name][statusflag]/1000).strftime('%Y-%m-%d %H:%M:%S'))
             else:
                 raise ValueError('ERROR', timeformat, 'is an invalid timeformat. Valid timeformats: epoch, datetime')
         else:
-            raise ValueError('ERROR', statusflag, 'is an invalid statusflag. Please use a valid status flag:\n',
+            raise ValueError('ERROR', statusflag, 'is an invalid statusflag. Please use a valid status flag: ',
                     plant[plant_name].keys()) # maybe use for loop for nice print?
     else:
         raise ValueError('ERROR:',plant_name, 'is an invalid plant name. These are the valid plant names:\n',
                 plant.keys())
-    return timestamp, print(timestamp)
+    return timestamp
 
-print(plant_statusflag_timestamp(0,'last_soil_measure', 'datetime'))
+
+if __name__ == "__main__":
+    print(plant_statusflag_timestamp('0','last_water','epoch'))
 
 
     # CoT get values
