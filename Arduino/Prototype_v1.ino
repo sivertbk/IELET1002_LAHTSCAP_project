@@ -4,9 +4,9 @@
 #include <DFRobot_VEML7700.h>
 
 // COT Config
-char ssid[] = "[Insert SSID]"; // Name on SSID
-char psk[] = "[Insert password]"; // Password for SSID
-char token1[] = "[Insert token]"; // COT User
+char ssid[] = "kameraBad2"; // Name on SSID
+char psk[] = "9D2Remember"; // Password for SSID
+char token1[] = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k"; // COT User
 char server[] = "www.circusofthings.com"; // Site communication
 
 // COT Keys
@@ -24,6 +24,7 @@ const int uvsensor_pin = 33;
 const int echo_pin = 25;
 const int trigger_pin = 26;
 const int pump_pin = 17;
+const int led_pin = 14;
 
 // PWM Config
 const int pump_channel = 5;
@@ -31,7 +32,7 @@ const int frequency = 1000;
 const int resolution = 8;
 
 // Global Variables
-volatile int soilsensor_value = 404;
+volatile int soilsensor_value;
 volatile int uvsensor_value;
 volatile int pump_state;
 volatile float humidity_value;
@@ -43,7 +44,7 @@ volatile float distance_value;
 unsigned long duration;
 int distance;
 
-Adafruit_AHTX0 aht;
+Adafruit_AHTX0 aht; 
 DFRobot_VEML7700 veml;
 CircusESP32Lib circusESP32(server, ssid, psk);
 TaskHandle_t Task1;
@@ -52,8 +53,8 @@ void setup(){
 
   //Start communication
   Serial.begin(115200);
-  veml.begin();
-  aht.begin();
+  veml.begin();     //starter funksjonen for å lese lysstyrke av Lux sensoren
+  aht.begin();      //starter funksjon for å lese temperatur og romfuktighet
   circusESP32.begin();
   
   // pinModes
@@ -79,13 +80,55 @@ void setup(){
 }
 
 // Runs in Core 0, and is used for all COT communication
-void communication( void * pvParameters){
+void communication (void * pvParameters){
   for(;;){
-    soilsensor_value = circusESP32.read(soilsensor_key1, token1);
-    Serial.println(soilsensor_value);
-  }  
+    circusESP32.write(soilsensor_key1, soilsensor_value, token1);
+    circusESP32.write(uvsensor_key1, uvsensor_value, token1);
+    circusESP32.write(temperature_key1, temperature_value, token1);
+    circusESP32.write(humidity_key1, humidity_value, token1);
+    circusESP32.write(luxsensor_key1, lux_value, token1);
+    circusESP32.write(ultrasonic_key1, distance_value, token1);
+
+    pump_state = circusESP32.read(pump_state_key1 , token1);
+  }
 }
 
 void loop(){
-  Serial.println(soilsensor_value);
+  soilsensor_value = analogRead(soilsensor_pin);
+//  Serial.println(); Serial.print("###Soil Sensor Value: "); Serial.println(soilsensor_value);
+
+  uvsensor_value = analogRead(uvsensor_pin);
+//  Serial.print("###UV value: "); Serial.println(uvsensor_value);
+
+  //Ultrasonisk sensor
+  digitalWrite(trigger_pin, LOW);
+  delayMicroseconds(2);
+
+  digitalWrite(trigger_pin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigger_pin, LOW);
+  duration = pulseIn(echo_pin, HIGH);
+  distance = duration * 0.034 / 2;
+  Serial.print("###Distance: "); Serial.print(distance); Serial.println(" cm");
+
+  distance = distance_value;
+
+  float lux_value;
+ 
+  veml.getALSLux(lux_value);
+  Serial.print("###Lux:"); Serial.print(lux_value); Serial.println(" lx");
+  
+  sensors_event_t humidity, temp;
+  aht.getEvent(&humidity, &temp);// populate temp and humidity objects with fresh data
+//  Serial.print("###Temperature: "); Serial.print(temp.temperature); Serial.println(" degrees C");
+//  Serial.print("###Humidity: "); Serial.print(humidity.relative_humidity); Serial.println("% rH");
+
+  temperature_value = temp.temperature;
+  humidity_value = humidity.relative_humidity;
+
+  if (pump_state == 1){
+      ledcWrite(pump_channel, 150);
+      delay(1000);
+  }
+  delay(30000);
 }
