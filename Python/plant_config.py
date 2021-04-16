@@ -92,13 +92,13 @@ plant = {'0':
           'humid_requirment':humid_requirement['normal'],
           'humid_value':humid_key.get()['Value']
           },
-         1:{},
-         2:{},
-         3:{},
-         4:{},
-         5:{},
-         6:{},
-         7:{}
+         '1':{},
+         '2':{},
+         '3':{},
+         '4':{},
+         '5':{},
+         '6':{},
+         '7':{}
          }
 
 
