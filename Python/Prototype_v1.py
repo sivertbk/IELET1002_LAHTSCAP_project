@@ -4,7 +4,7 @@ the project.
 *Add more text*
 """
 ## Get class module COT_Signal for communication
-from CoT import COT_Signal
+from plant_modules import COT_Signal
 token = "Insert token"
 
 ## Keys
