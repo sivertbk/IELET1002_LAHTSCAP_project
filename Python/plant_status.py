@@ -21,7 +21,7 @@ def plant_sensor_status(plant_name, sensor_name):
             status = 'need water'
         else:
             status = 'im good'
-    return status
+    return status #kek
 
 print(plant_sensor_status('0','soil'))
 
@@ -30,6 +30,8 @@ print(plant_sensor_status('0','soil'))
 
 # Get timestamp for soil last_soil_measure
 def plant_statusflag_timestamp(str(plant_name), str(statusflag), str(timeformat)):
+    # This function takes 3 arguments and returns a timestamp from given plant and its status to be timestamped
+    # Choose plant, statusflag and what timeformat it should return.
     if plant_name in plant:
         if statusflag in plant:
             timestamp = plant[plant]
@@ -47,7 +49,7 @@ def plant_statusflag_timestamp(str(plant_name), str(statusflag), str(timeformat)
     else:
         raise ValueError('ERROR:',plant_name, 'is an invalid plant name. These are the valid plant names:\n',
                 plant.keys())
-    return timestamp, print(timestamp)
+    return timestamp
 
 print(plant_statusflag_timestamp(0,'last_soil_measure', 'datetime'))
 
