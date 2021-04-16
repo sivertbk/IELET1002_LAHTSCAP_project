@@ -37,17 +37,17 @@ humid_requirement_threshold = {'moist':50,
 #### Dictionary of up to 8 plants with it's each own dictionary of the plants status ####
 # example: get soil value of plant 0 ---> plant[0]['soil_value'] gives the value(number) of plant 0.
 plant = {'0':
-         {'water_requirement':water_requirement['high moisture'],
+         {'water_requirement':water_requirement_threshold['high moisture'],
           'soil_value':soil_key.get()['Value'],
           'last_soil_measure':soil_key.get()['LastValueTime'],
           'water':False, # Values from 0 - 5 wich describes how much water the plant is getting from signal
           'last_water':pump_0_key.get()['LastValueTime'],
-          'light_requirement':light_requirement['bright'],
+          'light_requirement':light_requirement_threshold['bright'],
           'light_value':light_key.get()['Value'],
           'light':False,
           'temp_range':temp_range['room'],
           'temp_value':temp_key.get()['Value'],
-          'humid_requirment':humid_requirement['normal'],
+          'humid_requirment':humid_requirement_threshold['normal'],
           'humid_value':humid_key.get()['Value']
           },
          '1':{},
