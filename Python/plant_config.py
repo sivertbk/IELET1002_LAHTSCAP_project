@@ -78,7 +78,7 @@ humid_requirement = {'moist':humid_threshold_moist,
 #### plant status dict (Up too 8 plants.) ####--------------------------------------------------------------------------
 
 # example: get soil value of plant 0 ---> plant[0]['soil_value'] gives the value(number) of plant 0.
-plant = {0:
+plant = {'0':
          {'water_requirement':water_requirement['hella thirsty'],
           'soil_value':soil_key.get()["Value"],
           'last_soil_measure':soil_key.get()["LastValueTime"],
@@ -104,6 +104,6 @@ plant = {0:
 
 #### testing ####-------------------------------------------------------------------------------------------------------
 
-print(datetime.fromtimestamp(plant[0]['last_water']/1000).strftime('%Y-%m-%d %H:%M:%S'))
-print(plant[0]['temp_value'])
-print(plant[0]['water_requirement'])
+#print(datetime.fromtimestamp(plant[0]['last_water']/1000).strftime('%Y-%m-%d %H:%M:%S'))
+#print(plant[0]['temp_value'])
+#print(plant[0]['water_requirement'])
