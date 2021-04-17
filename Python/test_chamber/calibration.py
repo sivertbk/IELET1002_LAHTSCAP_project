@@ -1,0 +1,5 @@
+"Say these are variables reading values from COT"
+temp = "Oh snap"
+humid = "sweat"
+soil = "dry"
+pump = "pump"
