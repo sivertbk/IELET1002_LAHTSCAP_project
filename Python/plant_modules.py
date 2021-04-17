@@ -1,44 +1,36 @@
-# -*- coding: utf-8 -*-
 """
-Created on Wed Apr 14 19:13:04 2021
-
-@author: si_ve
+This file contains modules & functions. 
 """
-
 import requests
 import json
 
 
-#### CoT signal key ####
+## A class module that will connect a variable to Circus of Things.
 class COT_Signal:
     def __init__(self, key, token):
+        """
+        Connect the variable to a signal key and token from Circus of Things.
+        """
         self.key = key
         self.token = token
         self.payload = {"Key":self.key, "Token":self.token}
 
     def get(self):
+        """
+        Read (get) the signal value that is stored in Circus of Things.
+        """
         response = requests.get("https://circusofthings.com/ReadValue",
                                 params = self.payload)
         response = json.loads(response.content)
         return response
 
     def put(self, value):
+        """
+        Write (put) a new value to the signal that should be stored in Circus of Things.
+        """
         self.value = value
         self.payload["Value"] = value
         response = requests.put("https://circusofthings.com/WriteValue",
                                 params = self.payload,
                                 data = json.dumps(self.payload),
                                 headers = {"Content-Type":"application/json"})
-
-
-
-
-#### Signal keys and token ####
-
-token = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k"
-
-soil_key = COT_Signal("4991", token)
-pump_0_key = COT_Signal('32607', token)
-light_key = COT_Signal('17733', token)
-temp_key = COT_Signal('2615', token)
-humid_key = COT_Signal('10571', token)

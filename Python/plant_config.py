@@ -1,8 +1,7 @@
-# @Date:   2021-04-15T14:35:02+02:00
-# @Last modified time: 2021-04-16T18:22:40+02:00
-
-
-
+"""
+This file is used for a plants configuration.
+*Add more text*
+"""
 from datetime import *
 from CoT import *
 

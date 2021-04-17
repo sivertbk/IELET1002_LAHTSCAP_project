@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
 """
-Created on Mon Apr 12 14:05:49 2021
-
-@author: si_ve
+*Add text*
 """
 from datetime import *
 from plant_config import *
