@@ -33,7 +33,7 @@ def watering():
     if soilsensor_value < soil_requirement_key2.get()["Value"]: # and last time watering happened is more than 30 min
         pump_state_key1.put(1)
     else:
-        print("Too soon")
+        pump_state_key1.put(0)
 
 def plant_lights():
     """
