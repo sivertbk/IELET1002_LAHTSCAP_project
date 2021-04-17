@@ -3,8 +3,10 @@ This file contains codeflow suggestion for how the codeflow would work in
 the project.
 *Add more text*
 """
+
 ## Get class module COT_Signal for communication
 from plant_modules import COT_Signal
+
 token = "Insert token"
 
 ## Keys
@@ -19,6 +21,6 @@ ultrasonic_key = COT_Signal()
 def watering():
     ## Here is where it'll pump water to flower if needed based on soil sensor
     print("Water Water")
-
+    
 while True:
     print("Yo")
