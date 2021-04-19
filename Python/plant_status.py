@@ -7,7 +7,7 @@ Created on Mon Apr 12 14:05:49 2021
 from datetime import *
 from plant_config import *
 import time
-import plant_config
+from CoT import *
 
 # Every plant[i] got its own flag-status register with its values,requirements and statuses.
 # Here we update these values
@@ -17,54 +17,35 @@ soil_time_tracker = 0
 soil_control = False
 soil_over_threshold = True
 
-# Get values from soil_sensor and check status
-def plant_sensor_status(plant_name, sensor_name):
-    if sensor_name == 'soil':
-        sensor_name = 'soil_value'
-        if plant[str(plant_name)][str(sensor_name)] < plant[plant_name]['water_requirement']:
-            status = 'need water'
-        else:
-            status = 'im good'
-    return status
-
-print(plant_sensor_status('0','soil'))
-
-
 
 
 # Get timestamp for soil last_soil_measure
 def plant_last_water_timestamp(plant_name, timeformat):
-    # This function takes 2 arguments and returns a timestamp for when given plant got water last time
-    # Choose plant and what timeformat it should return.
-    plant_name = str(plant_name)
-    timeformat = str(timeformat)
+    """This function takes 2 arguments and returns a timestamp for when given plant got water last time.
+    Choose plant and what timeformat it should return your value as."""
+    # list of all pump keys for each plant, where the index matches all the plant names.
+    plant_pump_keys = [pump_0_key, pump_1_key, pump_3_key, pump_4_key, pump_5_key, pump_6_key, pump_7_key]
 
-    if plant_name in plant:
-        if statusflag in plant[plant_name]:
-            if timeformat == 'epoch':
-                timestamp = plant[plant_name][statusflag]
-            elif timeformat == 'datetime':
-                timestamp = print(datetime.fromtimestamp(
-                                    plant[plant_name][statusflag]/1000).strftime('%Y-%m-%d %H:%M:%S'))
-            else:
-                raise ValueError('ERROR', timeformat, 'is an invalid timeformat. Valid timeformats: epoch, datetime')
-        else:
-            raise ValueError('ERROR', statusflag, 'is an invalid statusflag. Please use a valid status flag: ',
-                    plant[plant_name].keys()) # maybe use for loop for nice print?
-    else:
-        raise ValueError('ERROR:',plant_name, 'is an invalid plant name. These are the valid plant names:\n',
-                plant.keys())
+    # Calls the last time pump state changed in CoT and stores the value in 'timestamp'.
+    if timeformat == ('epoch' or 'unix time'):
+        timestamp = plant_pump_keys[int(plant_name)].get()['LastValueTime']/1000
+
+    elif timeformat == 'datetime':
+        timestamp = datetime.fromtimestamp(plant_pump_keys[int(plant_name)].get()['LastValueTime']/1000).strftime('%Y-%m-%d %H:%M:%S')
+
     return timestamp
 
 
 
 
 def plant_soil_check(plant_name):
-    current_time = int(time.time())
-    soil_value = plant[plant_name]['soil_value']
+    """Function which takes the plant name as an argument and checks if the plant need water or not.
+    When the plant need water it changes the plants water status to True"""
+    current_time = int(time.time()) # current time in epoch
+    soil_value = plant[plant_name]['soil_value'] # ISSUE: values dont update???
     Threshold = plant[plant_name]['water_requirement']
-    last_water = int(pump_0_key.get()['LastValueTime']/1000)
-    water_interval = 10 # 12 Hours interval = 43200 seconds
+    last_water = plant_last_water_timestamp(plant_name,'epoch')
+    water_interval = 1 - 25 # 12 Hours interval = 43200 seconds(25 seconds offset/lag)
     wait_time = 5 # control wait time 30 minutes = 1800 seconds
     global soil_control, soil_time_tracker
 
@@ -99,17 +80,26 @@ def plant_sensorvalue_control(plant_name, sensor, wait_time):
     # This function takes 3 arguments and returns a boolean
     return bool
 
-
+while True:
+    plant_soil_check('0')
+    water('0')
+    print(datetime.fromtimestamp(plant_last_water_timestamp('0','epoch')).strftime('%Y-%m-%d %H:%M:%S'))
+    time.sleep(1)
+    if plant['0']['water']:
+        plant['0']['water'] = False
+    print(plant['0']['soil_value'])
 ######################################################################################################################
 
 if __name__ == "__main__":
-    while True:
+    #print(plant_last_water_timestamp('0','epoch'))
+    """while True:
         plant_soil_check('0')
         water('0')
-        print(datetime.fromtimestamp(plant['0']['last_water']).strftime('%Y-%m-%d %H:%M:%S'))
+        print(datetime.fromtimestamp(plant_last_water_timestamp('0','epoch')).strftime('%Y-%m-%d %H:%M:%S'))
         time.sleep(1)
         if plant['0']['water']:
             plant['0']['water'] = False
+        print(plant['0']['soil_value'])"""
 
 
 
