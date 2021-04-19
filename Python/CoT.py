@@ -37,8 +37,12 @@ class COT_Signal:
 
 token = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k"
 
-soil_key = COT_Signal("4991", token)
+#### Plant 0 keys ####
+soil_0_key = COT_Signal("4991", token)
 pump_0_key = COT_Signal('32607', token)
-light_key = COT_Signal('17733', token)
-temp_key = COT_Signal('2615', token)
-humid_key = COT_Signal('10571', token)
+light_0_key = COT_Signal('17733', token)
+temp_0_key = COT_Signal('2615', token)
+humid_0_key = COT_Signal('10571', token)
+
+#### Plant 1 keys ####
+pump_1_key = COT_Signal('20416', token)
