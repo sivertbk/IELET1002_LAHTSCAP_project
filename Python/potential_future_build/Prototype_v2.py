@@ -5,35 +5,59 @@ the project.
 """
 ## Get class module COT_Signal for communication
 from plant_modules import COT_Signal
-token1 = "Insert token"
-token2 = "Insert token"
+import json
+
+token1 = 'token1'
+token2 = 'token2'
 
 ## Keys for token1
-soilsensor_key1 = COT_Signal()
-temperature_key1 = COT_Signal()
-humidity_key1 = COT_Signal()
-uvsensor_key1 = COT_Signal()
-luxsensor_key1 = COT_Signal()
-pump_state_key1 = COT_Signal()
-ultrasonic_key1 = COT_Signal()
+soilsensor_key1 = COT_Signal('key1-1', token1)
+temperature_key1 = COT_Signal('key2-1',token1)
+humidity_key1 = COT_Signal('key3-1',token1)
+uvsensor_key1 = COT_Signal('key4-1',token1)
+luxsensor_key1 = COT_Signal('key5-1',token1)
+pump_state_key1 = COT_Signal('key6-1',token1)
+ultrasonic_key1 = COT_Signal('key7-1',token1)
+
+## Variables connected to keys for token1
+
 
 ## Keys for token2
-soil_requirement_key2 = COT_Signal()
+new_plant_key2 = COT_Signal('key1-2', token2)
+plant_number_key2 = COT_Signal('key2-2', token2)
+soil_requirement_key2 = COT_Signal('key3-2', token2)
+light_requirement_key2 = COT_Signal('key4-2', token2)
+temperature_maximum_key2 = COT_Signal('key5-2', token2)
+temperature_minimum_key2 = COT_Signal('key6-2', token2)
+humidity_requirement_key2 = COT_Signal('key7-2', token2)
 
 
-def plant_calibration():
+def plant_setup(new_plant):
     """
-    To calibrate the system to fit for the plant the code is currently working with. 
-    Should be able to update the dictionary & save new configuration. 
+    To set up a dictionary to be ready for use
     """
-    print("This is fine")
+    
+    with open('plant_dictionaries_v2.json') as json_file:
+        dictionaries = json.load(json_file)
+    
+    plant_number = plant_number_key2.get()['Value']
+    new_plant = bool (new_plant_key2.get()['Value'])
+    
+    if new_plant == True:
+        print("Make and store new config")
+            
+    else:
+        return dictionaries[str(plant_number)]
+    
+
+def plant_dictionary(dictionary = "empty"):
+    print('This where we update already made plant configuration') 
+    
     
 def watering():
-    soilsensor_value  = soilsensor_key1.get()["Value"]
-    if soilsensor_value < soil_requirement_key2.get()["Value"]: # and last time watering happened is more than 30 min
-        pump_state_key1.put(1)
-    else:
-        pump_state_key1.put(0)
+    """
+    If the soil is too dry, the system will give the plant some more water
+    """
 
 def plant_lights():
     """
@@ -44,3 +68,6 @@ while True:
     """
     Systems main code to be run. 
     """
+    new_plant = bool(new_plant_key2.get()['Value'])
+    
+    plant_setup(new_plant)
