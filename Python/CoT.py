@@ -46,7 +46,7 @@ humid_0_key = COT_Signal('10571', token)
 
 
 #### Plant 1 keys ####
-soil_1_key = COT_Signal('', token)
+soil_1_key = COT_Signal("28439", token)
 pump_1_key = COT_Signal('20416', token)
 light_1_key = COT_Signal('', token)
 temp_1_key = COT_Signal('', token)

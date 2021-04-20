@@ -1,5 +1,5 @@
 # @Date:   2021-04-15T14:35:02+02:00
-# @Last modified time: 2021-04-19T13:50:11+02:00
+# @Last modified time: 2021-04-20T23:13:42+02:00
 
 
 
@@ -10,7 +10,7 @@ from CoT import *
 #### Options of water requirement for a plant ####---------------------------------------------------------------------------
 # All values have a moisture range from 0% to 100%
 # Dictionary with thresholds value of how much water a plants need based on its soil moisture.
-water_requirement_threshold = {'high moisture':900,
+water_requirement_threshold = {'high moisture':90,
                                'decent moisture':60,
                                'normal moisture':40,
                                'low moisture':25,
@@ -57,8 +57,8 @@ plant = {'0':
           },
          '1':
          {'water_requirement':water_requirement_threshold['high moisture'],
-          'soil_value':'empty',
-          'last_soil_measure':'empty',
+          'soil_value':soil_1_key.get()['Value'],
+          'last_soil_measure':0,
           'water':False,
           'last_water':int(pump_1_key.get()['LastValueTime']/1000),
           'light_requirement':light_requirement_threshold['bright'],
