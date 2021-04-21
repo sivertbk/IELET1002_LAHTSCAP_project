@@ -1,7 +1,7 @@
 from plant_modules_v2 import COT_Signal
 import json
 
-token2 = 'eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k'
+token2 = ''
 
 ## Keys for token2
 new_plant_configuration_key2 = COT_Signal('10620', token2)
