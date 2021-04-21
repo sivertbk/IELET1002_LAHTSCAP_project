@@ -29,7 +29,6 @@ while True:
     # Will be true if user wants to switch plant or create a new one. It will also be run if plant_dictionary does not have any dictionary
     if new_plant == 1 or plant_dictionary == 1:
         plant_dictionary = plant_setup()
-        store_plant_number = str(int(plant_number_key2.get()['Value']))
 
     # Will be true if user wants to save new configuration.
     if (save_configuration == 1 and type(plant_dictionary) is dict) and (int(plant_dictionary['plant_number']) == plant_number_key2.get()['Value']):

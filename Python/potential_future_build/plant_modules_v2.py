@@ -8,7 +8,6 @@ This file contains modules & functions related to the plant.
 '''
 
 from CoT import COT_Signal
-from Prototype_v2 import *
 from datetime import *
 from CoT import *
 import time
