@@ -1,10 +1,15 @@
+# @Date:   2021-04-21T14:03:43+02:00
+# @Last modified time: 2021-04-21T16:29:50+02:00
+
+
+
 '''
 This file is used for a plants configuration.
 *Add more text*
 '''
 
 import datetime
-from plant_modules import COT_Signal
+from plant_modules_v2 import COT_Signal
 
 token2 = 'Insert token'
 

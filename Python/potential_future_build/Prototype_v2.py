@@ -1,73 +1,74 @@
+# @Date:   2021-04-21T14:03:41+02:00
+# @Last modified time: 2021-04-21T17:44:35+02:00
+
+
+
 """
 This file contains codeflow suggestion for how the codeflow would work in
 the project.
 *Add more text*
 """
-## Get class module COT_Signal for communication
-from plant_modules import COT_Signal
+from plant_modules_v2 import *
 import json
 
-token1 = 'token1'
-token2 = 'token2'
 
-## Keys for token1
-soilsensor_key1 = COT_Signal('key1-1', token1)
-temperature_key1 = COT_Signal('key2-1',token1)
-humidity_key1 = COT_Signal('key3-1',token1)
-uvsensor_key1 = COT_Signal('key4-1',token1)
-luxsensor_key1 = COT_Signal('key5-1',token1)
-pump_state_key1 = COT_Signal('key6-1',token1)
-ultrasonic_key1 = COT_Signal('key7-1',token1)
+# ----------------------------------------------------------------------------------------------------------------------
 
-## Variables connected to keys for token1
+# First time python is run (reboot system)
+plant_dictionary = plant_setup()
+print(plant_dictionary)
 
-
-## Keys for token2
-new_plant_key2 = COT_Signal('key1-2', token2)
-plant_number_key2 = COT_Signal('key2-2', token2)
-soil_requirement_key2 = COT_Signal('key3-2', token2)
-light_requirement_key2 = COT_Signal('key4-2', token2)
-temperature_maximum_key2 = COT_Signal('key5-2', token2)
-temperature_minimum_key2 = COT_Signal('key6-2', token2)
-humidity_requirement_key2 = COT_Signal('key7-2', token2)
-
-
-def plant_setup(new_plant):
-    """
-    To set up a dictionary to be ready for use
-    """
-    
-    with open('plant_dictionaries_v2.json') as json_file:
-        dictionaries = json.load(json_file)
-    
-    plant_number = plant_number_key2.get()['Value']
-    new_plant = bool (new_plant_key2.get()['Value'])
-    
-    if new_plant == True:
-        print("Make and store new config")
-            
-    else:
-        return dictionaries[str(plant_number)]
-    
-
-def plant_dictionary(dictionary = "empty"):
-    print('This where we update already made plant configuration') 
-    
-    
-def watering():
-    """
-    If the soil is too dry, the system will give the plant some more water
-    """
-
-def plant_lights():
-    """
-    If the plants haven't got enough sunlight, then it should turn on the plant lights
-    """
-    
 while True:
     """
-    Systems main code to be run. 
+    System main code to be run.
     """
-    new_plant = bool(new_plant_key2.get()['Value'])
-    
-    plant_setup(new_plant)
+    # Always checks on if user wants a new plant(create a new or switch), or save a new configuration.
+    new_plant = new_plant_configuration_key2.get()['Value']
+    save_configuration = save_configuration_key2.get()['Value']
+
+    # Will be true if user wants to switch plant or create a new one. It will also be run if plant_dictionary does not have any dictionary
+    if new_plant == 1 or plant_dictionary == 1:
+        plant_dictionary = plant_setup()
+        store_plant_number = str(int(plant_number_key2.get()['Value']))
+
+    # Will be true if user wants to save new configuration.
+    if (save_configuration == 1 and type(plant_dictionary) is dict) and (int(plant_dictionary['plant_number']) == plant_number_key2.get()['Value']):
+        plant_number = plant_number_key2.get()['Value']
+        plant_configuration(plant_number, plant_dictionary)
+
+    # If user wanted to save configuration, but pushed on wrong plant in CoT,
+    # then we'll update the signal to let user know which configuration the system is currently working with
+    # and reset save_configuration.
+    elif (save_configuration == 1) and (int(plant_dictionary['plant_number']) != plant_number_key2.get()['Value']):
+            plant_number_key2.put(plant_dictionary['plant_number'])
+            save_configuration_key2.put(0)
+
+    #### Update sensor values ####--------------------------------------------------------------------------------------
+    for plant_name in range(0, 1): # When done: range(0, len(plant_dictionary)): It wil then run trough all the plants
+        update_plant_soil_value(plant_name)
+        update_plant_water_state(plant_name)
+
+        #### Check sensors ####-----------------------------------------------------------------------------------------
+
+        plant_soil_check(plant_name)
+
+        #### Water and light ####---------------------------------------------------------------------------------------
+        water(plant_name)
+
+
+
+    #### Serial monitor ####--------------------------------------------------------------------------------------------
+    print('##########################################################')
+    print('PLANT STATUSES:')
+    for plant_name in range(0, 2):
+        print('\n  Plant', str(plant_name) +':')
+        print('  Soil:', int(plant[str(plant_name)]['soil_value']), '    Threshold:', plant[str(plant_name)]['water_requirement'])
+        print('  Pump:', plant[str(plant_name)]['water'], '  Last given water:', datetime.fromtimestamp(plant[str(plant_name)]['last_water']).strftime('%H:%M:%S %d/%m-%Y'))
+
+    print('##########################################################')
+
+
+
+
+    time.sleep(1)
+

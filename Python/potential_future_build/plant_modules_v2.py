@@ -1,47 +1,18 @@
+# @Date:   2021-04-21T14:03:41+02:00
+# @Last modified time: 2021-04-21T17:41:34+02:00
+
+
+
 '''
-This file contains modules & functions. 
+This file contains modules & functions related to the plant.
 '''
-import requests
-import json
+
+from CoT import COT_Signal
+from Prototype_v2 import *
 from datetime import *
-
-
-## A class module that will connect a variable to Circus of Things.
-class COT_Signal:
-    def __init__(self, key, token):
-        '''
-        Connect the variable to a signal key and token from Circus of Things.
-        '''
-        self.key = key
-        self.token = token
-        self.payload = {'Key':self.key, 'Token':self.token}
-
-    def get(self):
-        '''
-        Read (get) the signal value that is stored in Circus of Things.
-        '''
-        response = requests.get('https://circusofthings.com/ReadValue',
-                                params = self.payload)
-        response = json.loads(response.content)
-        return response
-
-    def put(self, value):
-        '''
-        Write (put) a new value to the signal that should be stored in Circus of Things.
-        '''
-        self.value = value
-        self.payload['Value'] = value
-        response = requests.put('https://circusofthings.com/WriteValue',
-                                params = self.payload,
-                                data = json.dumps(self.payload),
-                                headers = {'Content-Type':'application/json'})
-
-
-
-soil_time_tracker = {'0':[],'1':[],'2':[],'3':[],'4':[],'5':[],'6':[],'7':[]}
-soil_control = {'0':False,'1':False,'2':False,'3':False,'4':False,'5':False,'6':False,'7':False}
-soil_over_threshold = {'0':True,'1':True,'2':True,'3':True,'4':True,'5':True,'6':True,'7':True}
-
+from CoT import *
+import time
+import json
 
 
 
@@ -86,17 +57,26 @@ def update_plant_water_state(plant_name):
         plant_dictionary[str(plant_name)]['water'] = False
     return
 
+#### Soil check variables ####
 
-
+# Dictionary of timestampes for when soil control started for each plant
+soil_time_tracker = {'0':[],'1':[],'2':[],'3':[],'4':[],'5':[],'6':[],'7':[]}
+# Dictionary of booleans for each plant if soil control is in progress or not
+soil_control = {'0':False,'1':False,'2':False,'3':False,'4':False,'5':False,'6':False,'7':False}
+# Dictionary of booleans for each plant if the soil value is over given water requirement
+soil_over_threshold = {'0':True,'1':True,'2':True,'3':True,'4':True,'5':True,'6':True,'7':True}
 
 def plant_soil_check(plant_name):
     """
     Function which takes the plant name as an argument and checks if the plant need water or not.
     When the plant need water it changes the plants water status to True
     """
+    if 'last_water' not in plant_dictionary[str(plant_name)].keys():
+        plant_dictionary[str(plant_name)]['last_water'] = []
+
     current_time = int(time.time()) # current time in epoch
     soil_value = plant_dictionary[str(plant_name)]['soil_value']
-    Threshold = plant_dictionary[str(plant_name)]['water_requirement']
+    Threshold = plant_dictionary[str(plant_name)]['soil_requirement']
     last_water = plant_dictionary[str(plant_name)]['last_water']
     water_interval = 10 # 12 Hours interval = 43200 seconds(25 seconds offset/lag)
     control_wait_time = 30 # control wait time 30 minutes = 1800 seconds
@@ -135,6 +115,117 @@ def water(plant_name):
         return
 
 
+def new_default_dictionary():
+    """
+    A default plant dictionary used for new plant configurations.
+    Everytime this is run, the dictionary will get updated values for user controlled variables.
+    """
+    default = {'plant_number':plant_number_key2.get()['Value'],
+            'soil_requirement':soil_requirement_key2.get()['Value'],
+           'light_requirement':light_requirement_key2.get()['Value'],
+           'temperature_maximum':temperature_maximum_key2.get()['Value'],
+           'temperature_minimum':temperature_minimum_key2.get()['Value'],
+           'humidity_requirement':humidity_requirement_key2.get()['Value']
+           }
+    return default
+
+def plant_setup():
+    '''
+    To set up a dictionary to be ready for use.
+    Used whenever user wants to create a new plant configuration or switch to a different plant.
+    '''
+
+    # Open stored dictionary
+    with open('plant_dictionaries_v2.json') as json_file:
+        dictionaries = json.load(json_file)
+
+    # Getting some variable values from Circus of Things
+    new_plant = bool(new_plant_configuration_key2.get()['Value'])
+    save_configuration = bool(save_configuration_key2.get()['Value'])
+    plant_number = str(int(plant_number_key2.get()['Value']))
+
+    # If configuration doesn't exist in dictionary and user don't want a new plant, raise an error
+    if plant_number not in dictionaries and new_plant == False:
+        error_key2.put(1)
+        return error_key2.get()['Value']
+
+    # If user want's a new plant and configuration doesn't exist, make sure user can create a new plant.
+    elif plant_number not in dictionaries and new_plant == True:
+        save_configuration = False
+        save_configuration_key2.put(0)
+
+    # If the plant exists in dictionaries, reset some of the variables
+    elif plant_number in dictionaries:
+        save_configuration = False
+        save_configuration_key2.put(0)
+        new_plant = False
+        new_plant_configuration_key2.put(0)
+
+    # As long as user wants a new plant, but not save the configuration,
+    # the user can edit the configuration
+    while(new_plant == True and save_configuration == False):
+
+        # updates the configurations for every loop
+        default = new_default_dictionary()
+
+        #Checks if user want to save configuration.
+        save_configuration = bool (save_configuration_key2.get()['Value'])
+
+    # If user want to save configuration, reset variables to zero and save the dictionary
+    if(new_plant == True and save_configuration == True):
+        new_plant_configuration_key2.put(0)
+        save_configuration_key2.put(0)
+        error_key2.put(0)
+
+        dictionaries[plant_number] = default
+        with open('plant_dictionaries_v2.json', 'w') as json_file:
+            json.dump(dictionaries,json_file)
+
+        return default
+
+    # If user wanted to switch to a different plant configuration, make sure to update
+    # circus of things with the new configuration and return the new dictionary.
+    else:
+        soil_requirement_key2.put(dictionaries[plant_number]['soil_requirement'])
+        light_requirement_key2.put(dictionaries[plant_number]['light_requirement'])
+        temperature_maximum_key2.put(dictionaries[plant_number]['temperature_maximum'])
+        temperature_minimum_key2.put(dictionaries[plant_number]['temperature_minimum'])
+        humidity_requirement_key2.put(dictionaries[plant_number]['humidity_requirement'])
+        return dictionaries[plant_number]
+
+
+# plant_number is string, plant_configuration is a single dictionary.
+def plant_configuration(plant_number,plant_configuration):
+    """
+    This function is used for whenever the user wants to change some of the configuration to an already exisiting plant
+    """
+    # Get our stored dictionary of every plant configuration user has made.
+    with open('plant_dictionaries_v2.json') as json_file:
+        dictionaries = json.load(json_file)
+
+    # Update all values to every key that is based on user input.
+    plant_configuration['soil_requirement'] = soil_requirement_key2.get()['Value']
+    plant_configuration['light_requirement'] = light_requirement_key2.get()['Value']
+    plant_configuration['temperature_maximum'] = temperature_maximum_key2.get()['Value']
+    plant_configuration['temperature_minimum'] = temperature_minimum_key2.get()['Value']
+    plant_configuration['humidity_requirement'] = humidity_requirement_key2.get()['Value']
+
+    # Save the updated dictionary to json file.
+    with open('plant_dictionaries_v2.json','w') as json_file:
+        dictionaries[plant_number] = plant_configuration
+        json.dump(dictionaries, json_file)
+
+    # Reset save_configuration
+    save_configuration_key2.put(0)
+
+    # Update Circus of Things signals (Might be possible to delete this one)
+    soil_requirement_key2.put(plant_configuration['soil_requirement'])
+    light_requirement_key2.put(plant_configuration['light_requirement'])
+    temperature_maximum_key2.put(plant_configuration['temperature_maximum'])
+    temperature_minimum_key2.put(plant_configuration['temperature_minimum'])
+    humidity_requirement_key2.put(plant_configuration['humidity_requirement'])
+
+
+
 if __name__ == "__main__":
     print("Oh no")
-    
