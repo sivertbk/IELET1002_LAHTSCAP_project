@@ -1,7 +1,7 @@
 from plant_modules_v2 import COT_Signal
 import json
 
-token2 = ''
+token2 = '[Insett token]'
 
 ## Keys for token2
 new_plant_configuration_key2 = COT_Signal('10620', token2)
