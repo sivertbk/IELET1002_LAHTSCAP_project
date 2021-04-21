@@ -1,18 +1,18 @@
 from plant_modules_v2 import COT_Signal
 import json
 
-token2 = ''
+token2 = 'eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k'
 
 ## Keys for token2
-new_plant_configuration_key2 = COT_Signal('29963', token2)
-plant_number_key2 = COT_Signal('19680', token2)
-soil_requirement_key2 = COT_Signal('4884', token2)
-light_requirement_key2 = COT_Signal('20181', token2)
-temperature_maximum_key2 = COT_Signal('12799', token2)
-temperature_minimum_key2 = COT_Signal('23000', token2)
-humidity_requirement_key2 = COT_Signal('23114', token2)
-save_configuration_key2 = COT_Signal('29935', token2)
-error_key2 = COT_Signal('22924', token2)
+new_plant_configuration_key2 = COT_Signal('10620', token2)
+plant_number_key2 = COT_Signal('7801', token2)
+soil_requirement_key2 = COT_Signal('5893', token2)
+light_requirement_key2 = COT_Signal('22405', token2)
+temperature_maximum_key2 = COT_Signal('32424', token2)
+temperature_minimum_key2 = COT_Signal('10771', token2)
+humidity_requirement_key2 = COT_Signal('5950', token2)
+save_configuration_key2 = COT_Signal('24567', token2)
+error_key2 = COT_Signal('3904', token2)
 
 def new_default_dictionary():
     default = {'plant_number':plant_number_key2.get()['Value'],
