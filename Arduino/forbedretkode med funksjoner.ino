@@ -5,10 +5,10 @@
 #include <DFRobot_VEML7700.h>
 
 // COT Config
-char ssid[] = "Iprobe"; // Name on SSID pede's phone
-char psk[] = "Torpedor"; // Password for SSID peder's phone
-//char ssid[] = "kameraBad2"; // Name on SSID
-//char psk[] = "9D2Remember"; // Password for SSID
+//char ssid[] = "Iprobe"; // Name on SSID pede's phone
+//char psk[] = "Torpedor"; // Password for SSID peder's phone
+char ssid[] = "kameraBad2"; // Name on SSID
+char psk[] = "9D2Remember"; // Password for SSID
 char token1[] = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k"; // COT User
 char server[] = "www.circusofthings.com"; // Site communication
 
@@ -33,20 +33,25 @@ const int led_pin = 14;
 const int pump_channel = 5;
 const int frequency = 1000;
 const int resolution = 8;
+const int pump_magnitude = 255;
 
 // Global Variables
-volatile int soilsensor_percent;
-volatile int uvsensor_percent;
-volatile float humidity_value;
-volatile float temperature_value;
-volatile float lux_value;
-volatile float distance_value;
-volatile int pump_state;
+int soilsensor_percent;
+int uvsensor_percent;
+float humidity_value;
+float temperature_value;
+float lux_value;
+float distance_value;
+int pump_state;
 
 // Loop Variables
 //unsigned long duration;
 int distance;
 unsigned long pump_duration;
+unsigned long wait_duration = 3000;
+unsigned long wait_start = 0;
+bool pump_active = 0;
+int pump_strenght = 0;
 
 //unsigned long time;
 unsigned long pump_start = 0;
@@ -97,6 +102,12 @@ void communication (void * pvParameters){
     circusESP32.write(ultrasonic_key1, distance_value, token1);
 
     pump_state = circusESP32.read(pump_state_key1 , token1);
+
+    Serial.println("");
+    Serial.println("");
+    Serial.println("      ALLE VERDIER HENTET");
+    Serial.println("");
+    Serial.println("");
   }
 }
 
@@ -110,10 +121,10 @@ int get_soil(int pin){
 
 int get_uv(int pin){
   int value = analogRead(pin); // denne viser for detmeste 0 men om den får direkte sollys gir den verdier (16.04 kl 14ish ga den 400 ved direkte sollys)
-  int uvsensor_persent = map(value,0,611,0,100);         // usikker på nevner verdien, kan være høyere // hyeste målt verdi 1300 20.04 611
+  int value_percent = map(value,0,611,0,100);         // usikker på nevner verdien, kan være høyere // hyeste målt verdi 1300 20.04 611
 //  int uvsensor_persent = (uvsensor_value/611)*100;       // usikker på nevner verdien, kan være høyere
-  Serial.print("                UV in %: "); Serial.println(uvsensor_percent);
-  return uvsensor_persent;
+  Serial.print("                UV in %: "); Serial.println(value_percent);
+  return value_percent;
 }
 
 int get_waterlevel(int trig_pin, int echo_pin){    //Ultrasonisk sensor
@@ -159,80 +170,103 @@ float get_humi(){
 }
 
 /*
-void run_pump(int channel, unsigned long duration, int state, unsigned long start){
-  state = 5;
+bool run_pump(int channel, unsigned long duration, unsigned long start, bool active_value, char key[], char token[]){
   if (millis() - start < duration) {
-    ledcWrite(channel, 150);
+    ledcWrite(channel, 255);
   }
-  else{
+  else {
     ledcWrite(channel, 0);
-    pump_state = 0;
-    update_value()
+    active_value = 0;
+    circusESP32.write(key, 0, token);
   }
-}
-
-void update_value(char key, int value, char token){
-  circusESP32.write(key, value, token);
+  return active_value;
 }
 */
 
 void loop(){
 //  time = millis();
-  soilsensor_percent = get_soil(soilsensor_pin);
-  uvsensor_percent = get_uv(uvsensor_pin);
-  distance_value = get_waterlevel(trigger_pin,echo_pin);
-  lux_value = get_lux();
-  temperature_value = get_temp();
-  humidity_value = get_humi();
+//  pump_active = run_pump(pump_channel, pump_duration, pump_start, pump_active, pump_state_key1, token1);
+
+//  if (millis()-wait_duration >= wait_start) {
+    soilsensor_percent = get_soil(soilsensor_pin);
+    uvsensor_percent = get_uv(uvsensor_pin);
+    distance_value = get_waterlevel(trigger_pin,echo_pin);
+    lux_value = get_lux();
+    temperature_value = get_temp();
+    humidity_value = get_humi();
+/*    
+    Serial.println(soilsensor_percent);
+    Serial.println(uvsensor_percent);
+    Serial.println(distance_value);
+    Serial.println(lux_value);
+    Serial.println(temperature_value);
+    Serial.println(humidity_value);
+*/    
+    Serial.println(pump_state);
   
-  Serial.println(soilsensor_percent);
-  Serial.println(uvsensor_percent);
-  Serial.println(distance_value);
-  Serial.println(lux_value);
-  Serial.println(temperature_value);
-  Serial.println(humidity_value);
+    if (pump_active == 0) {
+      switch (pump_state){
+        case 1:
+          pump_duration = 1000;
+          //pump_strenght = pump_magnitude;
+          //pump_active = 1;
+          //pump_start = millis();
+          //pump_state = 0;
+          break;
+        
+        case 2:
+          pump_duration = 2000;
+          //pump_strenght = pump_magnitude;
+          //pump_active = 1;
+          //pump_start = millis();
+          //pump_state = 0;
+          break;
 
-/*
-  switch (pump_state){
-  case 1:
-    pump_duration = 1000;
-      run_pump(pump_channel, pump_duration, pump_state, pump_start);
-    pump_start = millis();
-    update_value(pump_state_key1, pump_state, token1);
-    break;
-  
-  case 2:
-    pump_duration = 2000;
-      run_pump(pump_channel, pump_duration, pump_state, pump_start);
-    pump_start = millis();
-    update_value(pump_state_key1, pump_state, token1);
-    break;
+        case 3:
+          pump_duration = 3000;
+          //pump_strenght = pump_magnitude;
+          //pump_active = 1;
+          //pump_start = millis();
+          //pump_state = 0;
+          break;
 
-  case 3:
-    pump_duration = 3000;
-      run_pump(pump_channel, pump_duration, pump_state, pump_start);
-    pump_start = millis();
-    update_value(pump_state_key1, pump_state, token1);
-    break;
+        case 4:
+          pump_duration = 4000;
+          //pump_strenght = pump_magnitude;
+          //pump_active = 1;
+          //pump_start = millis();
+          //pump_state = 0;
+          break;
 
-  case 4:
-    pump_duration = 4000;
-    run_pump(pump_channel, pump_duration, pump_state, pump_start);
-    pump_start = millis();
-    update_value(pump_state_key1, pump_state, token1);
-    break;
+        default:
+          //pump_state = 0;
+          pump_duration = 0;
+          pump_strenght = 0;
+          break;
+      }
+      if (pump_state != 0) {
+        pump_state = 0;
+        pump_active = 1;
+        pump_strenght = pump_magnitude;
+        circusESP32.write(pump_state_key1, 0, token1);
+        pump_start = millis();
+      }
+    }
+    else if (pump_active == 1 && (pump_start + pump_duration) > millis()) {
+      ledcWrite(pump_channel, pump_strenght);
+    }
 
-  case 5:
-    run_pump(pump_duration);
-    update_value(pump_state_key1, pump_state, token1);
-    break;
-
-  default:
-    pump_state = 0;
-    pump_duration = 0;
-    break;
+    else { 
+      pump_strenght = 0;
+      pump_active = 0;
+      ledcWrite(pump_channel, pump_strenght);
+    }
+  if (pump_state != 0) {
+    circusESP32.write(pump_state_key1, 0, token1);
   }
-*/
-  delay(3000);
+//    wait_start = millis();
+//  }
+//  else {}
 }
+
 
