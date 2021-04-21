@@ -5,8 +5,10 @@
 #include <DFRobot_VEML7700.h>
 
 // COT Config
-char ssid[] = "kameraBad2"; // Name on SSID
-char psk[] = "9D2Remember"; // Password for SSID
+char ssid[] = "Iprobe"; // Name on SSID pede's phone
+char psk[] = "Torpedor"; // Password for SSID peder's phone
+//char ssid[] = "kameraBad2"; // Name on SSID
+//char psk[] = "9D2Remember"; // Password for SSID
 char token1[] = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k"; // COT User
 char server[] = "www.circusofthings.com"; // Site communication
 
@@ -72,7 +74,7 @@ void setup(){
   ledcSetup(pump_channel, frequency, resolution);
   ledcAttachPin(pump_pin, pump_channel);
 
-/*  // Create a task for Core 0
+  // Create a task for Core 0
   xTaskCreatePinnedToCore(
     communication,          // Task Function
     "Task1",                // Name of task (Debug)
@@ -81,14 +83,14 @@ void setup(){
     2,                      // Priority of the task
     &Task1,                 // Task handle to keep track of created task
     0);                     // Pin task to core 0
-*/
+
 }
-/*
+
 // Runs in Core 0, and is used for all COT communication
 void communication (void * pvParameters){
   for(;;){
-    circusESP32.write(soilsensor_key1, soilsensor_value, token1);
-    circusESP32.write(uvsensor_key1, uvsensor_value, token1);
+    circusESP32.write(soilsensor_key1, soilsensor_percent, token1);
+    circusESP32.write(uvsensor_key1, uvsensor_percent, token1);
     circusESP32.write(temperature_key1, temperature_value, token1);
     circusESP32.write(humidity_key1, humidity_value, token1);
     circusESP32.write(luxsensor_key1, lux_value, token1);
@@ -97,7 +99,7 @@ void communication (void * pvParameters){
     pump_state = circusESP32.read(pump_state_key1 , token1);
   }
 }
-*/
+
 int get_soil(int pin){
   int value = analogRead(pin);
   int soilsensor_percent = map(value,0,4095,0,100);    // finner den prosentvise verdien for jordfuktighet
@@ -108,8 +110,8 @@ int get_soil(int pin){
 
 int get_uv(int pin){
   int value = analogRead(pin); // denne viser for detmeste 0 men om den får direkte sollys gir den verdier (16.04 kl 14ish ga den 400 ved direkte sollys)
-  int uvsensor_persent = map(value,0,400,0,100);         // usikker på nevner verdien, kan være høyere
-//  int uvsensor_persent = (uvsensor_value/400)*100;       // usikker på nevner verdien, kan være høyere
+  int uvsensor_persent = map(value,0,611,0,100);         // usikker på nevner verdien, kan være høyere // hyeste målt verdi 1300 20.04 611
+//  int uvsensor_persent = (uvsensor_value/611)*100;       // usikker på nevner verdien, kan være høyere
   Serial.print("                UV in %: "); Serial.println(uvsensor_percent);
   return uvsensor_persent;
 }
@@ -124,7 +126,7 @@ int get_waterlevel(int trig_pin, int echo_pin){    //Ultrasonisk sensor
   digitalWrite(trig_pin, LOW);
   duration = pulseIn(echo_pin, HIGH);
   int distance_value = duration * 0.034 / 2;
-  Serial.print("                Distance: "); Serial.print(distance); Serial.println(" cm");
+  Serial.print("                Distance: "); Serial.print(distance_value); Serial.println(" cm");
 
   return distance_value;
   //distance_percent = map(distance_value,0,FYLL iNN,0,100);
@@ -182,14 +184,14 @@ void loop(){
   lux_value = get_lux();
   temperature_value = get_temp();
   humidity_value = get_humi();
-  /*
+  
   Serial.println(soilsensor_percent);
   Serial.println(uvsensor_percent);
   Serial.println(distance_value);
   Serial.println(lux_value);
   Serial.println(temperature_value);
   Serial.println(humidity_value);
-*/
+
 /*
   switch (pump_state){
   case 1:
