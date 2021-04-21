@@ -169,25 +169,11 @@ float get_humi(){
   return humidity_value;
 }
 
-/*
-bool run_pump(int channel, unsigned long duration, unsigned long start, bool active_value, char key[], char token[]){
-  if (millis() - start < duration) {
-    ledcWrite(channel, 255);
-  }
-  else {
-    ledcWrite(channel, 0);
-    active_value = 0;
-    circusESP32.write(key, 0, token);
-  }
-  return active_value;
-}
-*/
-
 void loop(){
 //  time = millis();
 //  pump_active = run_pump(pump_channel, pump_duration, pump_start, pump_active, pump_state_key1, token1);
 
-//  if (millis()-wait_duration >= wait_start) {
+//  if (wait_start + wait_duration < millis()) {
     soilsensor_percent = get_soil(soilsensor_pin);
     uvsensor_percent = get_uv(uvsensor_pin);
     distance_value = get_waterlevel(trigger_pin,echo_pin);
@@ -208,38 +194,21 @@ void loop(){
       switch (pump_state){
         case 1:
           pump_duration = 1000;
-          //pump_strenght = pump_magnitude;
-          //pump_active = 1;
-          //pump_start = millis();
-          //pump_state = 0;
           break;
         
         case 2:
           pump_duration = 2000;
-          //pump_strenght = pump_magnitude;
-          //pump_active = 1;
-          //pump_start = millis();
-          //pump_state = 0;
           break;
 
         case 3:
           pump_duration = 3000;
-          //pump_strenght = pump_magnitude;
-          //pump_active = 1;
-          //pump_start = millis();
-          //pump_state = 0;
           break;
 
         case 4:
           pump_duration = 4000;
-          //pump_strenght = pump_magnitude;
-          //pump_active = 1;
-          //pump_start = millis();
-          //pump_state = 0;
           break;
 
         default:
-          //pump_state = 0;
           pump_duration = 0;
           pump_strenght = 0;
           break;
@@ -264,9 +233,6 @@ void loop(){
   if (pump_state != 0) {
     circusESP32.write(pump_state_key1, 0, token1);
   }
-//    wait_start = millis();
-//  }
-//  else {}
 }
 
 
