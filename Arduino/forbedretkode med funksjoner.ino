@@ -49,7 +49,7 @@ int pump_state;
 unsigned long pump_duration;      // Given in ms and determines how long the pump should run
 unsigned long pump_start = 0;
 unsigned long wait_start = 0;
-unsigned long wait_duration = 3000;
+unsigned long wait_duration = 5000;
 
 // Pump Logic Variables
 bool pump_active = 0;             // Bool variable that determines if the pump is active or not
@@ -175,68 +175,74 @@ float get_humi(){
 
 void loop(){
 //  time = millis();
-//  pump_active = run_pump(pump_channel, pump_duration, pump_start, pump_active, pump_state_key1, token1);
 
-//  if (wait_start + wait_duration < millis()) {
+  if (pump_active == 0 && (wait_start + wait_duration) < millis()) {
+    Serial.println(millis());
+
     soilsensor_percent = get_soil(soilsensor_pin);
     uvsensor_percent = get_uv(uvsensor_pin);
     distance_value = get_waterlevel(trigger_pin,echo_pin);
     lux_value = get_lux();
     temperature_value = get_temp();
     humidity_value = get_humi();
-/*    
+    /*    
     Serial.println(soilsensor_percent);
     Serial.println(uvsensor_percent);
     Serial.println(distance_value);
     Serial.println(lux_value);
     Serial.println(temperature_value);
     Serial.println(humidity_value);
-*/    
+    */    
     Serial.print("Pump state = "); Serial.println(pump_state);
   
-    if (pump_active == 0) {
-      switch (pump_state){
-        case 1:
-          pump_duration = 1000;
-          break;
-        
-        case 2:
-          pump_duration = 2000;
-          break;
+    //if (pump_active == 0) {
+    switch (pump_state){
+      case 1:
+        pump_duration = 1000;
+        break;
+      
+      case 2:
+        pump_duration = 2000;
+        break;
 
-        case 3:
-          pump_duration = 3000;
-          break;
+      case 3:
+        pump_duration = 3000;
+        break;
 
-        case 4:
-          pump_duration = 4000;
-          break;
+      case 4:
+        pump_duration = 4000;
+        break;
 
-        default:
-          pump_duration = 0;
-          pump_strenght = 0;
-          break;
-      }
-      if (pump_state != 0) {
-        pump_state = 0;
-        pump_active = 1;
-        pump_strenght = pump_magnitude;
-        circusESP32.write(pump_state_key1, 0, token1);
-        pump_start = millis();
-      }
+      default:
+        pump_duration = 0;
+        pump_strenght = 0;
+        break;
+      //}
     }
-    else if (pump_active == 1 && (pump_start + pump_duration) > millis()) {
-      ledcWrite(pump_channel, pump_strenght);
+    if (pump_state != 0) {
+      Serial.println("                                  HEI HAA");
+      pump_state = 0;
+      pump_active = 1;
+      pump_strenght = pump_magnitude;
+      circusESP32.write(pump_state_key1, 0, token1);
+      pump_start = millis();
     }
+    wait_start = millis();
+  }
+  else if (pump_active == 1 && (pump_start + pump_duration) > millis()) {
+    ledcWrite(pump_channel, pump_strenght);
+  }
 
-    else { 
-      pump_strenght = 0;
-      pump_active = 0;
-      ledcWrite(pump_channel, pump_strenght);
-    }
+  else { 
+    pump_strenght = 0;
+    pump_active = 0;
+    ledcWrite(pump_channel, pump_strenght);
+  }
+/*
   if (pump_state != 0) {
     circusESP32.write(pump_state_key1, 0, token1);
   }
+*/
 }
 
 
