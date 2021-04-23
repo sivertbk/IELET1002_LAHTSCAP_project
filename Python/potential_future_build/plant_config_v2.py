@@ -1,5 +1,5 @@
 # @Date:   2021-04-21T14:03:43+02:00
-# @Last modified time: 2021-04-21T16:29:50+02:00
+# @Last modified time: 2021-04-23T12:56:41+02:00
 
 
 
@@ -9,37 +9,8 @@ This file is used for a plants configuration.
 '''
 
 import datetime
-from plant_modules_v2 import COT_Signal
+import CoT
 
-token2 = 'Insert token'
+new_plant = new_plant_configuration_key2.get()['Value']
 
-new_plant_key2 = COT_Signal()
-plant_number_key2 = COT_Signal()
-soil_requirement_key2 = COT_Signal()
-light_requirement_key2 = COT_Signal()
-temperature_maximum_key2 = COT_Signal()
-temperature_minimum_key2 = COT_Signal()
-humidity_requirement_key2 = COT_Signal()
-
-
-
-"""
-plant variable is a dictionary that contains a dictionary of a plants configuration.
-Here one can store new configuration for new plants and get already existing configuration for plants that falls
-within the same category.
-"""
-plant = {'0':
-         {'soil_requirement':soil_requirement_key2.get()['Value'],
-          'light_requirement':light_requirement_key2.get()['Value'],
-          'temperature_maximum':temperature_maximum_key2.get()['Value'],
-          'temperature_minimum':temperature_minimum_key2.get()['Value'],
-          'humidity_requirement':humidity_requirement_key2.get()['Value']
-          }
-         }
-
-
-if __name__ == '__main__':
-
-    print(datetime.fromtimestamp(plant['0']['last_water']/1000).strftime('%Y-%m-%d %H:%M:%S'))
-    print(plant['0']['temp_value'])
-    print(plant['0']['water_requirement'])
+print(new_plant)
