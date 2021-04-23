@@ -11,7 +11,7 @@ the project.
 import plant_modules
 import CoT
 import json
-from datetime import *
+from datetime import datetime
 import time
 
 
@@ -19,11 +19,6 @@ import time
 
 # First time python is run (reboot system)
 plant_dictionary = plant_modules.plant_setup()
-'''
-for plant_name in range(1,len(plant_dictionary)):
-    plant_dictionary[str(plant_name)]['last_water'] = int(time.time())
-print(plant_dictionary)
-'''
 
 """
 System main code to be run.
@@ -32,8 +27,8 @@ System main code to be run.
 
 while True:
     # Always checks on if user wants a new plant(create a new or switch), or save a new configuration.
-    new_plant = plant_modules.new_plant_configuration_key2.get()['Value']
-    save_configuration = plant_modules.save_configuration_key2.get()['Value']
+    new_plant = CoT.new_plant_configuration_key2.get()['Value']
+    save_configuration = CoT.save_configuration_key2.get()['Value']
     
     # Whenever user wants to store a new configuration or look at what's already stored.
     if (new_plant == 1):
@@ -41,26 +36,27 @@ while True:
         
     # Will be true if user wants to save new configuration.
     if (save_configuration == 1):
-        plant_number = str(plant_modules.plant_number_key2.get()['Value'])
+        plant_number = str(CoT.plant_number_key2.get()['Value'])
         plant_modules.plant_configuration(plant_number, plant_dictionary[plant_number])
 
     #Timer that will open json_file and store the dictionary
     #print(plant_dictionary)
 
     #### Update sensor values ####--------------------------------------------------------------------------------------
-    for plant_name in range(1, 3): # When done: range(0, len(plant_dictionary)): It wil then run trough all the plants
+    for plant_name in range(1, 9): 
+        if plant_dictionary[str(plant_name)]['active_status']: # Only run if plant is active
         
-        plant_dictionary = plant_modules.update_plant_soil_value(plant_dictionary, plant_name)
-        
-        plant_dictionary = plant_modules.update_plant_water_state(plant_dictionary, plant_name)
-        
-
-        #### Check sensors ####-----------------------------------------------------------------------------------------
-
-        plant_dictionary = plant_modules.plant_soil_check(plant_dictionary, plant_name)
-        
-        #### Water and light ####---------------------------------------------------------------------------------------
-        plant_modules.water(plant_dictionary, plant_name)
+            plant_dictionary = plant_modules.update_plant_soil_value(plant_dictionary, plant_name)
+            
+            plant_dictionary = plant_modules.update_plant_water_state(plant_dictionary, plant_name)
+            
+    
+            #### Check sensors ####-------------------------------------------------------------------------------------
+    
+            plant_dictionary = plant_modules.plant_soil_check(plant_dictionary, plant_name)
+            
+            #### Water and light ####-----------------------------------------------------------------------------------
+            plant_modules.water(plant_dictionary, plant_name)
         
     
     
