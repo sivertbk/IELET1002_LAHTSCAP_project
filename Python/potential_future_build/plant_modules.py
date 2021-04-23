@@ -25,78 +25,46 @@ def new_default_dictionary():
     Everytime this is run, the dictionary will get updated values for user controlled variables.
     """
     default = {'plant_number':plant_number_key2.get()['Value'],
-            'soil_requirement':soil_requirement_key2.get()['Value'],
-           'light_requirement':light_requirement_key2.get()['Value'],
-           'temperature_maximum':temperature_maximum_key2.get()['Value'],
-           'temperature_minimum':temperature_minimum_key2.get()['Value'],
-           'humidity_requirement':humidity_requirement_key2.get()['Value']
-           }
+               'active_status':active_status_key2.get()['Value'],
+               'soil_requirement':soil_requirement_key2.get()['Value'],
+               'light_requirement':light_requirement_key2.get()['Value'],
+               'temperature_maximum':temperature_maximum_key2.get()['Value'],
+               'temperature_minimum':temperature_minimum_key2.get()['Value'],
+               'humidity_requirement':humidity_requirement_key2.get()['Value']
+               }
     return default
 
 
 def plant_setup():
     '''
-    To set up a dictionary to be ready for use.
-    Used whenever user wants to create a new plant configuration or switch to a different plant.
+    Used for the first time to get the dictionaries stored in json_file. 
+    Afterwards, it's used for whenever the user wants to store a new configuration.
+    (And also to see what's already stored)
     '''
-
-    # Open stored dictionary
+    
     with open('plant_dictionaries_v2.json') as json_file:
         dictionaries = json.load(json_file)
-
-    # Getting some variable values from Circus of Things
-    new_plant = bool(new_plant_configuration_key2.get()['Value'])
-    save_configuration = bool(save_configuration_key2.get()['Value'])
-    plant_number = str(int(plant_number_key2.get()['Value']))
-
-    # If configuration doesn't exist in dictionary and user don't want a new plant, raise an error
-    if plant_number not in dictionaries and new_plant == False:
-        error_key2.put(1)
-        return error_key2.get()['Value']
-
-    # If user want's a new plant and configuration doesn't exist, make sure user can create a new plant.
-    elif plant_number not in dictionaries and new_plant == True:
-        save_configuration = False
-        save_configuration_key2.put(0)
-
-    # If the plant exists in dictionaries, reset some of the variables
-    elif plant_number in dictionaries:
-        save_configuration = False
-        save_configuration_key2.put(0)
-        new_plant = False
-        new_plant_configuration_key2.put(0)
-
-    # As long as user wants a new plant, but not save the configuration,
-    # the user can edit the configuration
-    while(new_plant == True and save_configuration == False):
-
-        # updates the configurations for every loop
-        default = new_default_dictionary()
-
-        #Checks if user want to save configuration.
-        save_configuration = bool (save_configuration_key2.get()['Value'])
-
-    # If user want to save configuration, reset variables to zero and save the dictionary
-    if(new_plant == True and save_configuration == True):
-        new_plant_configuration_key2.put(0)
-        save_configuration_key2.put(0)
-        error_key2.put(0)
-
-        dictionaries[plant_number] = default
-        with open('plant_dictionaries_v2.json', 'w') as json_file:
-            json.dump(dictionaries,json_file)
-
-        return default
-
-    # If user wanted to switch to a different plant configuration, make sure to update
-    # circus of things with the new configuration and return the new dictionary.
+    
+    plant_number = str(plant_number_key2.get()['Value'])
+    
+    if plant_number not in dictionaries:
+        dictionaries[plant_number] = new_default_dictionary()
+        
     else:
+        plant_number_key2.put(dictionaries[plant_number]['plant_number'])
+        active_status_key2.put(dictionaries[plant_number]['active_status'])
         soil_requirement_key2.put(dictionaries[plant_number]['soil_requirement'])
         light_requirement_key2.put(dictionaries[plant_number]['light_requirement'])
         temperature_maximum_key2.put(dictionaries[plant_number]['temperature_maximum'])
         temperature_minimum_key2.put(dictionaries[plant_number]['temperature_minimum'])
         humidity_requirement_key2.put(dictionaries[plant_number]['humidity_requirement'])
-        return dictionaries[plant_number]
+    
+    with open('plant_dictionaries_v2.json', 'w') as json_file:
+        json.dump(dictionaries, json_file)   
+        
+    new_plant_configuration_key2.put(0)
+    
+    return dictionaries
 
 
 # plant_number is string, plant_configuration is a single dictionary.
@@ -114,6 +82,7 @@ def plant_configuration(plant_number,plant_configuration):
     plant_configuration['temperature_maximum'] = temperature_maximum_key2.get()['Value']
     plant_configuration['temperature_minimum'] = temperature_minimum_key2.get()['Value']
     plant_configuration['humidity_requirement'] = humidity_requirement_key2.get()['Value']
+    plant_configuration['active_status'] = active_status_key2.get()['Value']
 
     # Save the updated dictionary to json file.
     with open('plant_dictionaries_v2.json','w') as json_file:
@@ -122,13 +91,6 @@ def plant_configuration(plant_number,plant_configuration):
 
     # Reset save_configuration
     save_configuration_key2.put(0)
-
-    # Update Circus of Things signals (Might be possible to delete this one)
-    soil_requirement_key2.put(plant_configuration['soil_requirement'])
-    light_requirement_key2.put(plant_configuration['light_requirement'])
-    temperature_maximum_key2.put(plant_configuration['temperature_maximum'])
-    temperature_minimum_key2.put(plant_configuration['temperature_minimum'])
-    humidity_requirement_key2.put(plant_configuration['humidity_requirement'])
 
 
 

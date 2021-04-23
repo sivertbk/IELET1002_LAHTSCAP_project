@@ -23,37 +23,40 @@ while True:
     """
     System main code to be run.
     """
-    # Always checks on if user wants a new plant(create a new or switch), or save a new configuration.
-    new_plant = CoT.new_plant_configuration_key2.get()['Value']
-    save_configuration = CoT.save_configuration_key2.get()['Value']
+    
+    # First time python is run (reboot system)
+    plant_dictionary = plant_setup()
+    print(plant_dictionary)
 
-    # Will be true if user wants to switch plant or create a new one. It will also be run if plant_dictionary does not have any dictionary
-    if new_plant == 1 or plant_dictionary == 1:
-        plant_dictionary = plant_modules.plant_setup()
+    while True:
+        # Always checks on if user wants a new plant(create a new or switch), or save a new configuration.
+        new_plant = new_plant_configuration_key2.get()['Value']
+        save_configuration = save_configuration_key2.get()['Value']
+        
+        # Whenever user wants to store a new configuration or look at what's already stored.
+        if (new_plant == 1):
+            plant_dictionary = plant_setup()
 
-    # Will be true if user wants to save new configuration to current plant configuration.
-    if (save_configuration == 1 and type(plant_dictionary) is dict) and (int(plant_dictionary['plant_number']) == CoT.plant_number_key2.get()['Value']):
-        plant_number = CoT.plant_number_key2.get()['Value']
-        plant_modules.plant_configuration(plant_number, plant_dictionary)
+        # Will be true if user wants to save new configuration.
+        if (save_configuration == 1):
+            plant_number = str(plant_number_key2.get()['Value'])
+            plant_configuration(plant_number, plant_dictionary[plant_number])
 
-    # If user wanted to save configuration, but pushed on wrong plant in CoT,
-    # then we'll update the signal to let user know which configuration the system is currently working with
-    # and reset save_configuration.
-elif (save_configuration == 1) and (int(plant_dictionary['plant_number']) != CoT.plant_number_key2.get()['Value']):
-            CoT.plant_number_key2.put(plant_dictionary['plant_number'])
-            CoT.save_configuration_key2.put(0)
+        #Timer that will open json_file and store the dictionary
+        print(plant_dictionary)
 
     #### Update sensor values ####--------------------------------------------------------------------------------------
-    for plant_name in range(0, 1): # When done: range(0, len(plant_dictionary)): It wil then run trough all the plants
-        plant_modules.update_plant_soil_value(plant_name)
-        plant_modules.update_plant_water_state(plant_name)
+    for plant_dictionary in range(0, 1): # When done: range(0, len(plant_dictionary)): It wil then run trough all the plants
+    
+        plant_modules.update_plant_soil_value(plant_dictionary)
+        plant_modules.update_plant_water_state(plant_dictionary)
 
         #### Check sensors ####-----------------------------------------------------------------------------------------
 
-        plant_modules.plant_soil_check(plant_name)
+        plant_modules.plant_soil_check(plant_dictionary)
 
         #### Water and light ####---------------------------------------------------------------------------------------
-        plant_modules.water(plant_name)
+        plant_modules.water(plant_dictionary)
 
 
 

@@ -52,7 +52,7 @@ temperature_maximum_key2 = COT_Signal('32424', token)
 temperature_minimum_key2 = COT_Signal('10771', token)
 humidity_requirement_key2 = COT_Signal('5950', token)
 save_configuration_key2 = COT_Signal('24567', token)
-error_key2 = COT_Signal('3904', token)
+active_status_key2 = COT_Signal('3904', token)
 
 #### Plant sensor and output signal keys ####---------------------------------------------------------------------------
 
