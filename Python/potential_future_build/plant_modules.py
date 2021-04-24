@@ -153,11 +153,15 @@ def update_plant_water_state(plant_dictionary, plant_name):
 
 # Soil check variables:
 # Dictionary of timestampes for when soil control started for each plant
-soil_time_tracker = {'0':[],'1':[],'2':[],'3':[],'4':[],'5':[],'6':[],'7':[]}
+soil_time_tracker = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0,'7':0,'8':0}
 # Dictionary of booleans for each plant if soil control is in progress or not
-soil_control = {'0':False,'1':False,'2':False,'3':False,'4':False,'5':False,'6':False,'7':False}
+soil_control = {'1':False,'2':False,'3':False,'4':False,'5':False,'6':False,'7':False,'8':False}
 # Dictionary of booleans for each plant if the soil value is over given water requirement
-soil_over_threshold = {'0':True,'1':True,'2':True,'3':True,'4':True,'5':True,'6':True,'7':True}
+soil_over_threshold = {'1':True,'2':True,'3':True,'4':True,'5':True,'6':True,'7':True,'8':True}
+# Time of control check for soil in seconds. 30 minutes = 1800 seconds
+plant_soil_check_control_time = 20
+# Interval time between watering a plant in seconds. 12 Hours interval = 43200 seconds
+plant_water_interval = 5
 
 def plant_soil_check(plant_dictionary, plant_name):
     """
@@ -165,15 +169,15 @@ def plant_soil_check(plant_dictionary, plant_name):
     When the plant need water it changes the plants water status to True
     """
     if 'last_water' not in plant_dictionary[str(plant_name)].keys(): # Adding 'last_water' if not allready in dictionary
-        plant_dictionary[str(plant_name)]['last_water'] = []
+        plant_dictionary[str(plant_name)]['last_water'] = [] 
 
     # setting up varibales used in function
     current_time = int(time.time()) # current time in epoch
     soil_value = plant_dictionary[str(plant_name)]['soil_value']
     Threshold = plant_dictionary[str(plant_name)]['soil_requirement']
     last_water = plant_dictionary[str(plant_name)]['last_water']
-    water_interval = 5 # 12 Hours interval = 43200 seconds(25 seconds offset/lag)
-    control_wait_time = 10 # control wait time 30 minutes = 1800 seconds
+    water_interval = plant_water_interval
+    control_wait_time = plant_soil_check_control_time 
     #global soil_control, soil_time_tracker
 
     if (soil_value < Threshold) and ((current_time - last_water) > water_interval):
@@ -188,7 +192,7 @@ def plant_soil_check(plant_dictionary, plant_name):
             else:
                 return plant_dictionary
         else:
-            print('Plant', str(plant_name), 'soil control in progress! If pass, water in', control_wait_time, 'seconds.')
+            # print('Plant', str(plant_name), 'soil control in progress! If pass, water in', control_wait_time, 'seconds.')
             soil_time_tracker[str(plant_name)] = int(time.time())
             soil_control[str(plant_name)] = True
 

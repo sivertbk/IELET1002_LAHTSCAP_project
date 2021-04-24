@@ -13,6 +13,7 @@ import CoT
 import json
 from datetime import datetime
 import time
+import serial_messages
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -64,10 +65,12 @@ while True:
     #### Serial monitor ####--------------------------------------------------------------------------------------------
     print('##########################################################')
     print('PLANT STATUSES:')
-    for plant_name in range(1, 3):
-        print('\n  Plant', str(plant_name) +':')
-        print('  Soil:', int(plant_dictionary[str(plant_name)]['soil_value']), '    Threshold:', int(plant_dictionary[str(plant_name)]['soil_requirement']))
-        print('  Pump:', plant_dictionary[str(plant_name)]['water'], '  Last given water:', datetime.fromtimestamp(plant_dictionary[str(plant_name)]['last_water']).strftime('%H:%M:%S %d/%m-%Y'))
+    for plant_name in range(1, 9):
+        if plant_dictionary[str(plant_name)]['active_status']: # Only run if plant is active
+            print('\n  Plant', str(plant_name) +':', serial_messages.plant_checktime_left(str(plant_name)))
+            print('  Soil:', int(plant_dictionary[str(plant_name)]['soil_value']), '    Threshold:', int(plant_dictionary[str(plant_name)]['soil_requirement']), '   ')
+            print('  Pump:', plant_dictionary[str(plant_name)]['water'], '  Last given water:', datetime.fromtimestamp(plant_dictionary[str(plant_name)]['last_water']).strftime('%H:%M:%S %d/%m-%Y'))
+            # serial_messages.plant_checktime_left(str(plant_name))
 
     print('##########################################################')
 
@@ -75,4 +78,4 @@ while True:
     with open('plant_dictionaries_v2.json', 'w') as json_file:
         json.dump(plant_dictionary, json_file)
 
-    time.sleep(1)
+    #time.sleep(0.5)
