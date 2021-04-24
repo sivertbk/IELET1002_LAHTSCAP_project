@@ -161,7 +161,7 @@ soil_over_threshold = {'0':True,'1':True,'2':True,'3':True,'4':True,'5':True,'6'
 
 def plant_soil_check(plant_dictionary, plant_name):
     """
-    Function which takes the plant name as an argument and checks if the plant need water or not.
+    Function which takes the plant name and it's dictionary as arguments and checks if the plant need water or not.
     When the plant need water it changes the plants water status to True
     """
     if 'last_water' not in plant_dictionary[str(plant_name)].keys(): # Adding 'last_water' if not allready in dictionary
@@ -210,6 +210,12 @@ def plant_soil_check(plant_dictionary, plant_name):
 
 #### Temperature sensor check ####--------------------------------------------------------------------------------------
 
+def plant_temp_check(plant_dictionary, plant_name):
+    """
+    Function which takes the plant name and it's dictionary as arguments and checks if
+    temperature is within plants given temperature range.
+    """
+    
 
 
 #### Relative humidity sensor check ####--------------------------------------------------------------------------------
