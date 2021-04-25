@@ -1,10 +1,9 @@
 # @Date:   2021-04-21T16:31:52+02:00
-# @Last modified time: 2021-04-23T17:40:10+02:00
+# @Last modified time: 2021-04-25T19:13:54+02:00
 
 import requests
 import json
-#import plant_config_v2
-from plant_config_v2 import test_dictionary
+import time
 
 
 #### Class module that will connect a variable to Circus of Things. ####------------------------------------------------
@@ -40,50 +39,80 @@ class COT_Signal:
 
 
 
+
+
 #### CoT signal array functions ####------------------------------------------------------------------------------------
 
-def encode_plant_status(plant_name):
+def encode_plant_input_status(plant_name):
     """
-    This function takes a plant's inputs (pump and grow light) and arranges it to a array ready to be sent to CoT.
-    First number in return value represents plant number + 1 so the value always stay the same length.
+    This function takes a plant's inputs and arranges it to an array ready to be sent to CoT.
+    First number in return value represents plant number so the value always stays the same length.
     """
-    #global test_dictionary
-    array = [int(plant_name)+1]
-    # get pump status and store value in first index of array
-    pump = test_dictionary[str(plant_name)]['water']
-    if pump:
-        pump = 1
-    else:
-        pump = 0
-    array.append(pump)
-    # get light status and store value in last index of array
-    light = test_dictionary[str(plant_name)]['light']
-    if light:
-        light = 1
-    else:
-        light = 0
-    array.append(light)
-    # make array into a value to be sent
-    array = int(str(array[0])+str(array[1])+str(array[2]))
-    return array
+    array = [int(plant_name)]
+    # get statuses and store value in array
+    array.append(plant_dictionary[str(plant_name)]['water'])
+    array.append(plant_dictionary[str(plant_name)]['light'])
+    array.append(plant_dictionary[str(plant_name)]['temp_state'])
+    array.append(plant_dictionary[str(plant_name)]['humid_state'])
+    array.append(plant_dictionary[str(plant_name)]['water_level_state'])
 
-def decode_sensor_values(plant_name):
+    # make array into a value to be sent
+    for i in range(0,len(array)):
+        status_value += str(array[i])
+    return int(status_value)
+
+
+def decode_plant_input_status(plant_name, input = 'default'):
+    """
+    This function takes a plant's input states as an array an decodes it to a dictionary of inputs and its state.
+    Second argument takes plant input as keyword and returns state for given plant input. If second argument is ignored,
+    return plants whole dictionary with all input states.
+    """
+    # get input state array for plant
+    plant_state_array = int(plant_input_array_list[int(plant_name)-1].get()['Value'])
+    # separate digits in input state array into list as string
+    input_state_list = [str(i) for i in str(plant_state_array)]
+    # arrange all the digits in correct posision in dictionary and convert into integers again.
+    input_state_dict = {'plant':int(input_state_list[0]),
+                        'pump':int("".join(input_state_list[1])),
+                        'light':int("".join(input_state_list[2])),
+                        'temp':int("".join(input_state_list[3])),
+                        'humid':int("".join(input_state_list[4])),
+                        'water_level':int("".join(input_state_list[5]))
+                        }
+    # return whole dictionary if second argument is not given
+    if input == 'default':
+        return input_state_dict
+    else:
+        return sensor_values_dict[input]
+
+
+
+def decode_sensor_values(plant_name, sensor = 'default'):
     """
     This function takes a plant's outputs (sensor values) as an array an decodes it to a dictionary of sensor values.
+    Second argument takes sensor as keyword and returns value for given sensor. If second argument is ignored, return
+    plants whole dictionary with all sensor values.
     """
+
     # get sensor value array for plant
-    sensor_values = int(plant_sensor_array_list[int(plant_name)])
+    plant_sensor_array = int(plant_sensor_array_list[int(plant_name)-1].get()['Value'])
     # separate digits in sensor value array into list as string
-    sensor_values_list = [str(i) for i in str(sensor_values)]
+    sensor_values_list = [str(i) for i in str(plant_sensor_array)]
     # arrange all the digits in correct posision in dictionary and convert into integers again.
-    sensor_values_dict = {'plant':int(sensor_values_list[0])-1,
+    sensor_values_dict = {'plant':int(sensor_values_list[0]),
                           'soil':int("".join(sensor_values_list[1:4])),
                           'lux':int("".join(sensor_values_list[4:10])),
                           'temp':int("".join(sensor_values_list[10:13])),
                           'humid':int("".join(sensor_values_list[13:16])),
                           'water_level':int("".join(sensor_values_list[16:]))
                           }
-    return sensor_values_dict
+    # return whole dictionary if second argument is not given
+    if sensor == 'default':
+        return sensor_values_dict
+    else:
+        return sensor_values_dict[sensor]
+
 
 
 #### Signal token ####--------------------------------------------------------------------------------------------------
@@ -170,48 +199,94 @@ temp_7_key = COT_Signal('', token)
 humid_7_key = COT_Signal('', token)
 
 
-#### Plant signal arrays ####-------------------------------------------------------------------------------------------
+#### Plant sensor signal arrays ####------------------------------------------------------------------------------------
 
 """
 The arrangment of the sensor value posision in array:
-plant name + 1 > 10^18  (1-8)
-10^15 < soil_value < 10^18  (0-100)
-10^9 < lux_value < 10^15 (0-999999)
-10^6 < temp_value < 10^9 (0-100)
-10^3 < humid_value < 10^6 (0-100)
-water_level < 10^3 (0-100)
 
-Example of plant 0 with all values maxed out: 1100999999100100100
+plant name > 10^18             range: (1-8)
+10^15 < soil_value < 10^18     range: (0-100)
+10^9 < lux_value < 10^15       range: (0-999999)
+10^6 < temp_value < 10^9       range: (0-100)
+10^3 < humid_value < 10^6      range: (0-100)
+water_level < 10^3             range: (0-100)
+
+Example of plant 1 with all values maxed out: 1100999999100100100
 """
 
-# Plant 0
-plant_sensor_array_list = [COT_Signal('27693', token).get()['Value'], 2_007_000008_009_010_011]
-plant_0 = COT_Signal('27693', token)
+# Plant 1
+plant_1_sensor_key = '27693'
+# Plant 2
+plant_2_sensor_key = '13508'
+# Plant 3
+plant_3_sensor_key = '6796'
+# Plant 4
+plant_4_sensor_key = ''
+# Plant 5
+plant_5_sensor_key = ''
+# Plant 6
+plant_6_sensor_key = ''
+# Plant 7
+plant_7_sensor_key = ''
+# Plant 8
+plant_8_sensor_key = ''
+
+plant_sensor_array_list = [COT_Signal(plant_1_sensor_key, token),  # Plant 1
+                           COT_Signal(plant_2_sensor_key, token),  # Plant 2
+                           COT_Signal(plant_3_sensor_key, token),  # Plant 3
+                           COT_Signal(plant_4_sensor_key, token),  # Plant 4
+                           COT_Signal(plant_5_sensor_key, token),  # Plant 5
+                           COT_Signal(plant_6_sensor_key, token),  # Plant 6
+                           COT_Signal(plant_7_sensor_key, token),  # Plant 7
+                           COT_Signal(plant_8_sensor_key, token)   # Plant 8
+                           ]
+
+#### Plant sensor signal arrays ####------------------------------------------------------------------------------------
+
+"""
+The arrangment of the inputs posision in array:
+
+plant name > 10^4
+10^3 < pump_state < 10^4
+10^2 < light_state < 10^3
+10^1 < temp_state < 10^2
+10^0 < humid_state < 10^1
+water_tank_state < 10^0
+
+Example of plant 1 with random states: 101220
+"""
 
 # Plant 1
-plant_0_sensor_array = 1_000_000000_000_000_000
-
+plant_1_input_key = '23560'
 # Plant 2
-
-
+plant_2_input_key = '31609'
 # Plant 3
-
-
+plant_3_input_key = '1005'
 # Plant 4
-
-
+plant_4_input_key = ''
 # Plant 5
-
-
+plant_5_input_key = ''
 # Plant 6
-
-
+plant_6_input_key = ''
 # Plant 7
+plant_7_input_key = ''
+# Plant 8
+plant_8_input_key = ''
 
-
+plant_input_array_list = [COT_Signal(plant_1_input_key, token),  # Plant 1
+                          COT_Signal(plant_2_input_key, token),  # Plant 2
+                          COT_Signal(plant_3_input_key, token),  # Plant 3
+                          COT_Signal(plant_4_input_key, token),  # Plant 4
+                          COT_Signal(plant_5_input_key, token),  # Plant 5
+                          COT_Signal(plant_6_input_key, token),  # Plant 6
+                          COT_Signal(plant_7_input_key, token),  # Plant 7
+                          COT_Signal(plant_8_input_key, token)   # Plant 8
+                          ]
 
 
 
 if __name__ == "__main__":
-    plant_status = encode_plant_status('0')
-    print(plant_status)
+    while True:
+        signal = decode_sensor_values(1)
+        print(signal)
+        time.sleep(1)

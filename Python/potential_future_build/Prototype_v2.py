@@ -1,5 +1,5 @@
 # @Date:   2021-04-21T14:03:41+02:00
-# @Last modified time: 2021-04-23T13:43:47+02:00
+# @Last modified time: 2021-04-25T19:13:52+02:00
 
 
 
@@ -31,17 +31,9 @@ if __name__ == "__main__":
         if new_plant == 1 or plant_dictionary == 1:
             plant_dictionary = plant_modules.plant_setup()
 
-        # Will be true if user wants to save new configuration to current plant configuration.
-        if (save_configuration == 1 and type(plant_dictionary) is dict) and (int(plant_dictionary['plant_number']) == CoT.plant_number_key2.get()['Value']):
-            plant_number = CoT.plant_number_key2.get()['Value']
-            plant_modules.plant_configuration(plant_number, plant_dictionary)
+            plant_dictionary = plant_modules.update_plant_sensor_values(plant_dictionary, plant_name)
 
-        # If user wanted to save configuration, but pushed on wrong plant in CoT,
-        # then we'll update the signal to let user know which configuration the system is currently working with
-        # and reset save_configuration.
-    elif (save_configuration == 1) and (int(plant_dictionary['plant_number']) != CoT.plant_number_key2.get()['Value']):
-                CoT.plant_number_key2.put(plant_dictionary['plant_number'])
-                CoT.save_configuration_key2.put(0)
+            plant_dictionary = plant_modules.update_plant_input_states_state(plant_dictionary, plant_name)
 
         #### Update sensor values ####--------------------------------------------------------------------------------------
         for plant_name in range(0, 1): # When done: range(0, len(plant_dictionary)): It wil then run trough all the plants

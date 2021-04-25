@@ -1,5 +1,5 @@
 # @Date:   2021-04-21T14:03:41+02:00
-# @Last modified time: 2021-04-23T12:50:41+02:00
+# @Last modified time: 2021-04-25T19:18:53+02:00
 
 
 
@@ -141,35 +141,22 @@ def plant_configuration(plant_number,plant_configuration):
 
 #### Update sensor values ####------------------------------------------------------------------------------------------
 
-def plant_last_water_timestamp(plant_name, timeformat):
+def update_plant_sensor_values(plant_dictionary, plant_name):
     """
-    This function takes 2 arguments and returns a timestamp for when given plant got water last time.
-    Choose plant and what timeformat it should return your value as.
+    This function takes the given plant's dictionary and updates sensor values, then returns updated dictionary.
     """
-    # list of all pump keys for each plant, where the index matches all the plant names.
-    plant_pump_keys = [pump_0_key, pump_1_key, pump_3_key, pump_4_key, pump_5_key, pump_6_key, pump_7_key]
-
-    # Calls the last time pump state changed in CoT and stores the value in 'timestamp'.
-    if timeformat == ('epoch' or 'unix time'):
-        timestamp = plant_pump_keys[int(plant_name)].get()['LastValueTime']/1000
-    elif timeformat == 'datetime':
-        timestamp = datetime.fromtimestamp(plant_pump_keys[int(plant_name)].get()['LastValueTime']/1000).strftime('%Y-%m-%d %H:%M:%S')
-    return timestamp
+    plant_sensor_dict = CoT.decode_sensor_values(plant_name)
+    plant_dictionary[str(plant_name)]['soil_value'] = plant_sensor_dict['soil']
+    plant_dictionary[str(plant_name)]['lux_value'] = plant_sensor_dict['lux']
+    plant_dictionary[str(plant_name)]['temp_value'] = plant_sensor_dict['temp']
+    plant_dictionary[str(plant_name)]['humidity_value'] = plant_sensor_dict['humid']
+    plant_dictionary[str(plant_name)]['water_level'] = plant_sensor_dict['water_level']
+    return plant_dictionary
 
 
-def update_plant_soil_value(plant_name):
+def update_plant_input_states(plant_dictionary, plant_name):
     """
-    This function takes the given plant's soil value from CoT and updates the plant dictionary ['soil_value'].
-    """
-    # list of all soil keys for each plant, where the index matches all the plant names.
-    plant_soil_keys = [soil_0_key, soil_1_key, soil_2_key, soil_3_key, soil_4_key, soil_5_key, soil_6_key, soil_7_key]
-    plant_dictionary[str(plant_name)]['soil_value'] = plant_soil_keys[int(plant_name)].get()['Value']
-    return
-
-
-def update_plant_water_state(plant_name):
-    """
-    This function takes the given plant's water state from CoT and updates the plant dictionary ['water'].
+    This function takes the given plant's dictionary and updates input states, then returns updated dictionary.
     """
     plant_pump_keys = [pump_0_key, pump_1_key, pump_3_key, pump_4_key, pump_5_key, pump_6_key, pump_7_key]
     if plant_pump_keys[int(plant_name)].get()['Value'] == 1:
@@ -184,17 +171,19 @@ def update_plant_water_state(plant_name):
 
 
 
-
-
 #### Soil moisture check ####-------------------------------------------------------------------------------------------
 
 # Soil check variables:
 # Dictionary of timestampes for when soil control started for each plant
-soil_time_tracker = {'0':[],'1':[],'2':[],'3':[],'4':[],'5':[],'6':[],'7':[]}
+soil_time_tracker = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0,'7':0,'8':0}
 # Dictionary of booleans for each plant if soil control is in progress or not
-soil_control = {'0':False,'1':False,'2':False,'3':False,'4':False,'5':False,'6':False,'7':False}
+soil_control = {'1':False,'2':False,'3':False,'4':False,'5':False,'6':False,'7':False,'8':False}
 # Dictionary of booleans for each plant if the soil value is over given water requirement
-soil_over_threshold = {'0':True,'1':True,'2':True,'3':True,'4':True,'5':True,'6':True,'7':True}
+soil_over_threshold = {'1':True,'2':True,'3':True,'4':True,'5':True,'6':True,'7':True,'8':True}
+# Time of control check for soil in seconds. 30 minutes = 1800 seconds
+plant_soil_check_control_time = 20
+# Interval time between watering a plant in seconds. 12 Hours interval = 43200 seconds
+plant_water_interval = 5
 
 def plant_soil_check(plant_name):
     """
@@ -209,9 +198,8 @@ def plant_soil_check(plant_name):
     soil_value = plant_dictionary[str(plant_name)]['soil_value']
     Threshold = plant_dictionary[str(plant_name)]['soil_requirement']
     last_water = plant_dictionary[str(plant_name)]['last_water']
-    water_interval = 10 # 12 Hours interval = 43200 seconds(25 seconds offset/lag)
-    control_wait_time = 30 # control wait time 30 minutes = 1800 seconds
-    #global soil_control, soil_time_tracker
+    water_interval = plant_water_interval
+    control_wait_time = plant_soil_check_control_time
 
     if (soil_value < Threshold) and ((current_time - last_water) > water_interval):
         soil_over_threshold[str(plant_name)] = False
@@ -219,15 +207,15 @@ def plant_soil_check(plant_name):
             if (current_time - soil_time_tracker[str(plant_name)]) > control_wait_time:
                 soil_control[str(plant_name)] = False
                 soil_time_tracker[str(plant_name)] = 0
-                plant_dictionary[str(plant_name)]['water'] = True
-                return print('watering plant',str(plant_name)+'!')
+                plant_dictionary[str(plant_name)]['water'] = 1
+                print('watering plant',str(plant_name)+'!')
+                return plant_dictionary
             else:
                 return
         else:
-            print('Plant', str(plant_name), 'soil control in progress! If pass, water in', control_wait_time, 'seconds.')
+            # print('Plant', str(plant_name), 'soil control in progress! If pass, water in', control_wait_time, 'seconds.')
             soil_time_tracker[str(plant_name)] = int(time.time())
             soil_control[str(plant_name)] = True
-
     else:
         soil_control[str(plant_name)] = False
         soil_over_threshold[str(plant_name)] = True
@@ -245,6 +233,12 @@ def plant_soil_check(plant_name):
 
 
 #### Temperature sensor check ####--------------------------------------------------------------------------------------
+
+def plant_temp_check(plant_dictionary, plant_name):
+    """
+    Function which takes the plant name and it's dictionary as arguments and checks if
+    temperature is within plants given temperature range.
+    """
 
 
 
@@ -265,8 +259,9 @@ def water(plant_name):
     """
     plant_pump_keys = [pump_0_key, pump_1_key, pump_3_key, pump_4_key, pump_5_key, pump_6_key, pump_7_key]
     if plant_dictionary[str(plant_name)]['water']:
-        plant_dictionary[str(plant_dictionary_name)]['last_water'] = int(time.time())
-        return plant_pump_keys[int(plant_name)].put(1)
+        plant_dictionary[str(plant_name)]['last_water'] = int(time.time())
+        plant_pump_keys[int(plant_name)-1].put(1)
+        return
     else:
         return
 
