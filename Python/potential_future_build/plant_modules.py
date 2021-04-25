@@ -1,8 +1,3 @@
-# @Date:   2021-04-21T14:03:41+02:00
-# @Last modified time: 2021-04-23T12:50:41+02:00
-
-
-
 '''
 This file contains modules & functions related to the plant.
 All functions are sorted in the same way it flows through the main loop:
@@ -95,30 +90,7 @@ def plant_configuration(plant_number,plant_configuration):
 
 
 
-
-
-
-
-
-
-
 #### Update sensor values ####------------------------------------------------------------------------------------------
-
-def plant_last_water_timestamp(plant_name, timeformat):
-    """
-    This function takes 2 arguments and returns a timestamp for when given plant got water last time.
-    Choose plant and what timeformat it should return your value as.
-    """
-    # list of all pump keys for each plant, where the index matches all the plant names.
-    plant_pump_keys = [CoT.pump_0_key, CoT.pump_1_key, CoT.pump_2_key, CoT.pump_3_key, CoT.pump_4_key, CoT.pump_5_key, CoT.pump_6_key, CoT.pump_7_key]
-
-    # Calls the last time pump state changed in CoT and stores the value in 'timestamp'.
-    if timeformat == ('epoch' or 'unix time'):
-        timestamp = plant_pump_keys[int(plant_name)-1].get()['LastValueTime']/1000
-    elif timeformat == 'datetime':
-        timestamp = datetime.fromtimestamp(plant_pump_keys[int(plant_name)-1].get()['LastValueTime']/1000).strftime('%Y-%m-%d %H:%M:%S')
-    return timestamp
-
 
 def update_plant_soil_value(plant_dictionary, plant_name):
     """
@@ -140,11 +112,6 @@ def update_plant_water_state(plant_dictionary, plant_name):
     elif plant_pump_keys[int(plant_name)-1].get()['Value'] == 0:
         plant_dictionary[str(plant_name)]['water'] = False
     return plant_dictionary
-
-
-
-
-
 
 
 
@@ -200,10 +167,6 @@ def plant_soil_check(plant_dictionary, plant_name):
 
 
 
-
-
-
-
 #### Lux sensor check ####----------------------------------------------------------------------------------------------
 
 
@@ -217,10 +180,23 @@ def plant_soil_check(plant_dictionary, plant_name):
 
 
 #### Ultrasonic sensor/water level check ####---------------------------------------------------------------------------
+def checking_water_tank_volume(plant_dictionary, plant_name):
+    
+    ultrasonic_sensor_keys = [CoT.ultrasonic_0_key, CoT.ultrasonic_1_key, CoT.ultrasonic_2_key, CoT.ultrasonic_3_key,
+                              CoT.ultrasonic_4_key, CoT.ultrasonic_5_key, CoT.ultrasonic_6_key, CoT.ultrasonic_7_key]
+    
+    water_tank_volume = ultrasonic_sensor_keys[plant_name-1].get()['Value']
+    
+    if (10 < water_tank_volume and water_tank_volume < 20):
+        print(f"Warning, water level is at {water_tank_volume}%")
+        
+    elif water_tank_volume < 10:
+        print("Oh no")
+        
+    else:
+        print('all fine')
 
-
-
-#### Pump state ####----------------------------------------------------------------------------------------------------
+#### Pump state & water percentage left in tank (Ultrasonic) ####----------------------------------------------------------------------------------------------------
 
 def water(plant_dictionary, plant_name):
     """
@@ -237,18 +213,6 @@ def water(plant_dictionary, plant_name):
 
 
 #### Light state ####---------------------------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

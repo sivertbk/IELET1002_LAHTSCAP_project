@@ -57,17 +57,20 @@ while True:
             
             #### Water and light ####-----------------------------------------------------------------------------------
             plant_modules.water(plant_dictionary, plant_name)
-        
-    
+            
+            
+        else:
+            continue
     
 
     #### Serial monitor ####--------------------------------------------------------------------------------------------
     print('##########################################################')
     print('PLANT STATUSES:')
     for plant_name in range(1, 3):
-        print('\n  Plant', str(plant_name) +':')
-        print('  Soil:', int(plant_dictionary[str(plant_name)]['soil_value']), '    Threshold:', int(plant_dictionary[str(plant_name)]['soil_requirement']))
-        print('  Pump:', plant_dictionary[str(plant_name)]['water'], '  Last given water:', datetime.fromtimestamp(plant_dictionary[str(plant_name)]['last_water']).strftime('%H:%M:%S %d/%m-%Y'))
+        if plant_dictionary[str(plant_name)]['active_status']:
+            print('\n  Plant', str(plant_name) +':')
+            print('  Soil:', int(plant_dictionary[str(plant_name)]['soil_value']), '    Threshold:', int(plant_dictionary[str(plant_name)]['soil_requirement']))
+            print('  Pump:', plant_dictionary[str(plant_name)]['water'], '  Last given water:', datetime.fromtimestamp(plant_dictionary[str(plant_name)]['last_water']).strftime('%H:%M:%S %d/%m-%Y'))
 
     print('##########################################################')
 

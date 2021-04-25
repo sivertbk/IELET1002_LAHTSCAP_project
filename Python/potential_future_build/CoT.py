@@ -62,6 +62,7 @@ pump_0_key = COT_Signal('32607', token)
 light_0_key = COT_Signal('17733', token)
 temp_0_key = COT_Signal('2615', token)
 humid_0_key = COT_Signal('10571', token)
+ultrasonic_0_key = COT_Signal('28799', token)
 
 
 # Plant 1 keys
@@ -70,6 +71,7 @@ pump_1_key = COT_Signal('20416', token)
 light_1_key = COT_Signal('', token)
 temp_1_key = COT_Signal('', token)
 humid_1_key = COT_Signal('', token)
+ultrasonic_1_key = COT_Signal('', token)
 
 
 # Plant 2 keys
@@ -78,7 +80,7 @@ pump_2_key = COT_Signal('', token)
 light_2_key = COT_Signal('', token)
 temp_2_key = COT_Signal('', token)
 humid_2_key = COT_Signal('', token)
-
+ultrasonic_2_key = COT_Signal('', token)
 
 # Plant 3 keys
 soil_3_key = COT_Signal('', token)
@@ -86,7 +88,7 @@ pump_3_key = COT_Signal('', token)
 light_3_key = COT_Signal('', token)
 temp_3_key = COT_Signal('', token)
 humid_3_key = COT_Signal('', token)
-
+ultrasonic_3_key = COT_Signal('', token)
 
 # Plant 4 keys
 soil_4_key = COT_Signal('', token)
@@ -94,7 +96,7 @@ pump_4_key = COT_Signal('', token)
 light_4_key = COT_Signal('', token)
 temp_4_key = COT_Signal('', token)
 humid_4_key = COT_Signal('', token)
-
+ultrasonic_4_key = COT_Signal('', token)
 
 # Plant 5 keys
 soil_5_key = COT_Signal('', token)
@@ -102,7 +104,7 @@ pump_5_key = COT_Signal('', token)
 light_5_key = COT_Signal('', token)
 temp_5_key = COT_Signal('', token)
 humid_5_key = COT_Signal('', token)
-
+ultrasonic_5_key = COT_Signal('', token)
 
 # Plant 6 keys
 soil_6_key = COT_Signal('', token)
@@ -110,7 +112,7 @@ pump_6_key = COT_Signal('', token)
 light_6_key = COT_Signal('', token)
 temp_6_key = COT_Signal('', token)
 humid_6_key = COT_Signal('', token)
-
+ultrasonic_6_key = COT_Signal('', token)
 
 # Plant 7 keys
 soil_7_key = COT_Signal('', token)
@@ -118,3 +120,4 @@ pump_7_key = COT_Signal('', token)
 light_7_key = COT_Signal('', token)
 temp_7_key = COT_Signal('', token)
 humid_7_key = COT_Signal('', token)
+ultrasonic_7_key = COT_Signal('', token)
