@@ -1,5 +1,5 @@
 # @Date:   2021-04-21T14:03:41+02:00
-# @Last modified time: 2021-04-23T12:58:40+02:00
+# @Last modified time: 2021-04-26T15:08:50+02:00
 
 
 
@@ -29,11 +29,11 @@ while True:
     # Always checks on if user wants a new plant(create a new or switch), or save a new configuration.
     new_plant = CoT.new_plant_configuration_key2.get()['Value']
     save_configuration = CoT.save_configuration_key2.get()['Value']
-    
+
     # Whenever user wants to store a new configuration or look at what's already stored.
     if (new_plant == 1):
         plant_dictionary = plant_modules.plant_setup()
-        
+
     # Will be true if user wants to save new configuration.
     if (save_configuration == 1):
         plant_number = str(CoT.plant_number_key2.get()['Value'])
@@ -43,29 +43,29 @@ while True:
     #print(plant_dictionary)
 
     #### Update sensor values ####--------------------------------------------------------------------------------------
-    for plant_name in range(1, 9): 
+    for plant_name in range(1, 9):
         if plant_dictionary[str(plant_name)]['active_status']: # Only run if plant is active
-        
-            plant_dictionary = plant_modules.update_plant_soil_value(plant_dictionary, plant_name)
-            
-            plant_dictionary = plant_modules.update_plant_water_state(plant_dictionary, plant_name)
-            
-    
+
+            plant_dictionary = plant_modules.update_plant_sensor_values(plant_dictionary, plant_name)
+
+            plant_dictionary = plant_modules.update_plant_input_states_state(plant_dictionary, plant_name)
+
+
             #### Check sensors ####-------------------------------------------------------------------------------------
-    
+
             plant_dictionary = plant_modules.plant_soil_check(plant_dictionary, plant_name)
-            
+
             #### Water and light ####-----------------------------------------------------------------------------------
             plant_modules.water(plant_dictionary, plant_name)
-            
-            
+
+
         else:
             continue
-    
+
 
     #### Serial monitor ####--------------------------------------------------------------------------------------------
     print('##########################################################')
-    print('PLANT STATUSES:')
+    print('PLANT STATUSES:                           CLOCK:', datetime.fromtimestamp(int(time.time())).strftime('%H:%M:%S'))
     for plant_name in range(1, 3):
         if plant_dictionary[str(plant_name)]['active_status']:
             print('\n  Plant', str(plant_name) +':')
