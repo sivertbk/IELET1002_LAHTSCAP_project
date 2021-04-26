@@ -210,7 +210,7 @@ def checking_temperature(plant_dictionary, plant_name):
         temp_time_tracker[str(plant_name)]['time'] = time.time()
         temp_time_tracker[str(plant_name)]['control'] = True
     else:
-        print("waiting for temp")
+        print(f"waiting for temp for plant {plant_name}")
     
 #### Relative humidity sensor check ####--------------------------------------------------------------------------------
 humid_time_tracker = {'0':{'time':time.time(),'control':False},'1':{'time':time.time(),'control':False},
@@ -243,7 +243,7 @@ def checking_humidity(plant_dictionary, plant_name):
         humid_time_tracker[str(plant_name)]['control'] = True
     
     else:
-        print("waiting for humid")
+        print(f"waiting for humid for plant {plant_name}")
 #### Ultrasonic sensor/water level check ####---------------------------------------------------------------------------
 watertank_time_tracker = {'0':{'time':time.time(),'control':False},'1':{'time':time.time(),'control':False},
                           '2':{'time':time.time(),'control':False},'3':{'time':time.time(),'control':False},
@@ -279,7 +279,7 @@ def checking_water_tank_volume(plant_dictionary, plant_name):
         watertank_time_tracker[str(plant_name)]['control'] = True
     
     else:
-        print("waiting for watertank")
+        print(f"waiting for watertank for plant {plant_name}")
     
 #### Pump state & water percentage left in tank (Ultrasonic) ####----------------------------------------------------------------------------------------------------
 
