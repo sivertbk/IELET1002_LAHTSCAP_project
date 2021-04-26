@@ -1,5 +1,5 @@
 # @Date:   2021-04-21T16:31:52+02:00
-# @Last modified time: 2021-04-26T16:43:30+02:00
+# @Last modified time: 2021-04-26T20:32:49+02:00
 
 import requests
 import json
@@ -9,6 +9,41 @@ import time
 #### Signal token ####--------------------------------------------------------------------------------------------------
 
 token = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k"
+
+#### Class module that will connect a variable to Circus of Things. ####------------------------------------------------
+class COT_Signal:
+    def __init__(self, key, token):
+        '''
+        Connect the variable to a signal key and token from Circus of Things.
+        '''
+        self.key = key
+        self.token = token
+        self.payload = {'Key':self.key, 'Token':self.token}
+
+    def get(self):
+        '''
+        Read (get) the signal value that is stored in Circus of Things.
+        '''
+        response = requests.get('https://circusofthings.com/ReadValue',
+                                params = self.payload)
+        response = json.loads(response.content)
+        return response
+
+    def put(self, value):
+        '''
+        Write (put) a new value to the signal that should be stored in Circus of Things.
+        '''
+        self.value = value
+        self.payload['Value'] = value
+        response = requests.put('https://circusofthings.com/WriteValue',
+                                params = self.payload,
+                                data = json.dumps(self.payload),
+                                headers = {'Content-Type':'application/json'})
+
+
+
+
+
 
 #### Plant setup & configuration keys ####------------------------------------------------------------------------------
 
@@ -105,40 +140,6 @@ plant_state_array_list = [COT_Signal(plant_1_system_state_key, token),  # Plant 
                           COT_Signal(plant_7_system_state_key, token),  # Plant 7
                           COT_Signal(plant_8_system_state_key, token)   # Plant 8
                           ]
-
-
-
-#### Class module that will connect a variable to Circus of Things. ####------------------------------------------------
-class COT_Signal:
-    def __init__(self, key, token):
-        '''
-        Connect the variable to a signal key and token from Circus of Things.
-        '''
-        self.key = key
-        self.token = token
-        self.payload = {'Key':self.key, 'Token':self.token}
-
-    def get(self):
-        '''
-        Read (get) the signal value that is stored in Circus of Things.
-        '''
-        response = requests.get('https://circusofthings.com/ReadValue',
-                                params = self.payload)
-        response = json.loads(response.content)
-        return response
-
-    def put(self, value):
-        '''
-        Write (put) a new value to the signal that should be stored in Circus of Things.
-        '''
-        self.value = value
-        self.payload['Value'] = value
-        response = requests.put('https://circusofthings.com/WriteValue',
-                                params = self.payload,
-                                data = json.dumps(self.payload),
-                                headers = {'Content-Type':'application/json'})
-
-
 
 
 
@@ -293,7 +294,9 @@ ultrasonic_7_key = COT_Signal('', token)
 
 
 if __name__ == "__main__":
-    while True:
+    '''while True:
         signal = decode_plant_system_states(1)
         print(signal)
         time.sleep(1)
+    '''
+    COT_Signal('27693', token).put(1100001000.100100110)
