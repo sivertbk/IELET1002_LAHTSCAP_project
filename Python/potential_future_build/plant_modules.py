@@ -233,21 +233,53 @@ def plant_soil_check(plant_name):
 
 
 #### Temperature sensor check ####--------------------------------------------------------------------------------------
-
-def plant_temp_check(plant_dictionary, plant_name):
-    """
-    Function which takes the plant name and it's dictionary as arguments and checks if
-    temperature is within plants given temperature range.
-    """
-
-
+def checking_temperature(plant_dictionary, plant_name):
+    
+    temp_sensor_keys = [CoT.temp_0_key, CoT.temp_1_key, CoT.temp_2_key, CoT.temp_3_key,
+                        CoT.temp_4_key, CoT.temp_5_key, CoT.temp_6_key, CoT.temp_7_key]
+    
+    temp_value = temp_sensor_keys[plant_name-1].get()['Value']
+    temp_maximum_threshold = plant_dictionary[plant_name]['temperature_maximum']
+    temp_minimum_threshold = plant_dictionary[plant_name]['temperature_minimum']
+    
+    if temp_value > temp_maximum_threshold:
+        print("Hot hot hot hot")
+    elif temp_value < temp_minimum_threshold:
+        print("Why so cold?")
+    else:
+        print("Paradise")
 
 #### Relative humidity sensor check ####--------------------------------------------------------------------------------
-
+def checking_humidity(plant_dictionary, plant_name):
+    
+    humid_sensor_keys = [CoT.humid_0_key, CoT.humid_1_key, CoT.humid_2_key, CoT.humid_3_key,
+                         CoT.humid_4_key, CoT.humid_5_key, CoT.humid_6_key, CoT.humid_7_key]
+    
+    humid_value = humid_sensor_keys[plant_name-1].get()['Value']
+    humid_threshold = plant_dictionary[plant_name]['humidity_requirement']
+    
+    if humid_value < humid_threshold:
+        print("Too dry?")
+    else:
+        print("Possibility for having too much humidity")
 
 
 #### Ultrasonic sensor/water level check ####---------------------------------------------------------------------------
-
+def checking_water_tank_volume(plant_dictionary, plant_name):
+    
+    ultrasonic_sensor_keys = [CoT.ultrasonic_0_key, CoT.ultrasonic_1_key, CoT.ultrasonic_2_key, CoT.ultrasonic_3_key,
+                              CoT.ultrasonic_4_key, CoT.ultrasonic_5_key, CoT.ultrasonic_6_key, CoT.ultrasonic_7_key]
+    
+    water_tank_volume = ultrasonic_sensor_keys[plant_name-1].get()['Value']
+    
+    if (10 < water_tank_volume and water_tank_volume < 20):
+        print(f"Warning, water level is at {water_tank_volume}%")
+        
+    elif water_tank_volume < 10:
+        print("Oh no")
+        
+    else:
+        print('all fine')
 
 
 #### Pump state ####----------------------------------------------------------------------------------------------------
