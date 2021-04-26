@@ -1,5 +1,5 @@
 # @Date:   2021-04-24T13:38:04+02:00
-# @Last modified time: 2021-04-26T15:08:52+02:00
+# @Last modified time: 2021-04-26T16:43:04+02:00
 
 
 
@@ -27,7 +27,7 @@ def new_default_dictionary():
     default = {'plant_number':CoT.plant_number_key2.get()['Value'],
                'active_status':CoT.active_status_key2.get()['Value'],
                'soil_requirement':CoT.soil_requirement_key2.get()['Value'],
-               'light_requirement':CoT.light_requirement_key2.get()['Value'],
+               'lux_requirement':CoT.light_requirement_key2.get()['Value'],
                'temperature_maximum':CoT.temperature_maximum_key2.get()['Value'],
                'temperature_minimum':CoT.temperature_minimum_key2.get()['Value'],
                'humidity_requirement':CoT.humidity_requirement_key2.get()['Value'],
@@ -55,7 +55,7 @@ def plant_setup():
         CoT.plant_number_key2.put(dictionaries[plant_number]['plant_number'])
         CoT.active_status_key2.put(dictionaries[plant_number]['active_status'])
         CoT.soil_requirement_key2.put(dictionaries[plant_number]['soil_requirement'])
-        CoT.light_requirement_key2.put(dictionaries[plant_number]['light_requirement'])
+        CoT.light_requirement_key2.put(dictionaries[plant_number]['lux_requirement'])
         CoT.temperature_maximum_key2.put(dictionaries[plant_number]['temperature_maximum'])
         CoT.temperature_minimum_key2.put(dictionaries[plant_number]['temperature_minimum'])
         CoT.humidity_requirement_key2.put(dictionaries[plant_number]['humidity_requirement'])
@@ -79,7 +79,7 @@ def plant_configuration(plant_number,plant_configuration):
 
     # Update all values to every key that is based on user input.
     plant_configuration['soil_requirement'] = CoT.soil_requirement_key2.get()['Value']
-    plant_configuration['light_requirement'] = CoT.light_requirement_key2.get()['Value']
+    plant_configuration['lux_requirement'] = CoT.light_requirement_key2.get()['Value']
     plant_configuration['temperature_maximum'] = CoT.temperature_maximum_key2.get()['Value']
     plant_configuration['temperature_minimum'] = CoT.temperature_minimum_key2.get()['Value']
     plant_configuration['humidity_requirement'] = CoT.humidity_requirement_key2.get()['Value']
@@ -104,21 +104,22 @@ def update_plant_sensor_values(plant_dictionary, plant_name):
     plant_sensor_dict = CoT.decode_sensor_values(plant_name)
     plant_dictionary[str(plant_name)]['soil_value'] = plant_sensor_dict['soil']
     plant_dictionary[str(plant_name)]['lux_value'] = plant_sensor_dict['lux']
-    plant_dictionary[str(plant_name)]['temp_value'] = plant_sensor_dict['temp']
+    plant_dictionary[str(plant_name)]['temperature_value'] = plant_sensor_dict['temp']
     plant_dictionary[str(plant_name)]['humidity_value'] = plant_sensor_dict['humid']
     plant_dictionary[str(plant_name)]['water_level'] = plant_sensor_dict['water_level']
     return plant_dictionary
 
 
-def update_plant_input_states(plant_dictionary, plant_name):
+def update_plant_system_states(plant_dictionary, plant_name):
     """
-    This function takes the given plant's dictionary and updates input states, then returns updated dictionary.
+    This function takes the given plant's dictionary and updates system states, then returns updated dictionary.
     """
-    plant_pump_keys = [pump_0_key, pump_1_key, pump_3_key, pump_4_key, pump_5_key, pump_6_key, pump_7_key]
-    if plant_pump_keys[int(plant_name)].get()['Value'] == 1:
-        plant_dictionary[str(plant_name)]['water'] = True
-    elif plant_pump_keys[int(plant_name)].get()['Value'] == 0:
-        plant_dictionary[str(plant_name)]['water'] = False
+    plant_state_dict = CoT.decode_plant_system_states(plant_name)
+    plant_dictionary[str(plant_name)]['pump_state'] = plant_state_dict['pump_state']
+    plant_dictionary[str(plant_name)]['light_state'] = plant_state_dict['light_state']
+    plant_dictionary[str(plant_name)]['temperature_state'] = plant_state_dict['temp_state']
+    plant_dictionary[str(plant_name)]['humidity_state'] = plant_state_dict['humid_state']
+    plant_dictionary[str(plant_name)]['water_level_state'] = plant_state_dict['water_level_state']
     return plant_dictionary
 
 
@@ -160,7 +161,7 @@ def plant_soil_check(plant_dictionary, plant_name):
             if (current_time - soil_time_tracker[str(plant_name)]) > control_wait_time:
                 soil_control[str(plant_name)] = False
                 soil_time_tracker[str(plant_name)] = 0
-                plant_dictionary[str(plant_name)]['water'] = 1
+                plant_dictionary[str(plant_name)]['pump_state'] = 1
                 print('watering plant',str(plant_name)+'!')
                 return plant_dictionary
             else:
@@ -231,15 +232,15 @@ def checking_water_tank_volume(plant_dictionary, plant_name):
     else:
         print('all fine')
 
-#### Pump state & water percentage left in tank (Ultrasonic) ####----------------------------------------------------------------------------------------------------
+#### Pump state & water percentage left in tank (Ultrasonic) ####-------------------------------------------------------
 
-def water(plant_dictionary, plant_name):
+def put_system_states_to_CoT(plant_dictionary, plant_name):
     """
-    This function reads the bool for every plants water state and sends a signal to CoT if its time for a shower.
-    When water state == True it updates last watering.
+    This function reads the states from plant dictionary before it encodes the states and uploads the system states
+    to CoT.
     """
     plant_pump_keys = [CoT.pump_0_key, CoT.pump_1_key, CoT.pump_2_key, CoT.pump_3_key, CoT.pump_4_key, CoT.pump_5_key, CoT.pump_6_key, CoT.pump_7_key]
-    if plant_dictionary[str(plant_name)]['water']:
+    if plant_dictionary[str(plant_name)]['pump_state']:
         plant_dictionary[str(plant_name)]['last_water'] = int(time.time())
         plant_pump_keys[int(plant_name)-1].put(1)
         return

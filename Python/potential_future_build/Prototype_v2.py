@@ -1,5 +1,5 @@
 # @Date:   2021-04-21T14:03:41+02:00
-# @Last modified time: 2021-04-26T15:08:50+02:00
+# @Last modified time: 2021-04-26T15:52:22+02:00
 
 
 
@@ -66,11 +66,13 @@ while True:
     #### Serial monitor ####--------------------------------------------------------------------------------------------
     print('##########################################################')
     print('PLANT STATUSES:                           CLOCK:', datetime.fromtimestamp(int(time.time())).strftime('%H:%M:%S'))
-    for plant_name in range(1, 3):
+    for plant_name in range(1, 9):
         if plant_dictionary[str(plant_name)]['active_status']:
             print('\n  Plant', str(plant_name) +':')
             print('  Soil:', int(plant_dictionary[str(plant_name)]['soil_value']), '    Threshold:', int(plant_dictionary[str(plant_name)]['soil_requirement']))
-            print('  Pump:', plant_dictionary[str(plant_name)]['water'], '  Last given water:', datetime.fromtimestamp(plant_dictionary[str(plant_name)]['last_water']).strftime('%H:%M:%S %d/%m-%Y'))
+            print('  Pump:', plant_dictionary[str(plant_name)]['pump_state'], '  Last given water:', datetime.fromtimestamp(plant_dictionary[str(plant_name)]['last_water']).strftime('%H:%M:%S %d/%m-%Y'))
+        else:
+            continue
 
     print('##########################################################')
 
