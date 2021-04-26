@@ -25,12 +25,13 @@ def new_default_dictionary():
     Everytime this is run, the dictionary will get updated values for user controlled variables.
     """
     default = {'plant_number':plant_number_key2.get()['Value'],
-            'soil_requirement':soil_requirement_key2.get()['Value'],
-           'light_requirement':light_requirement_key2.get()['Value'],
-           'temperature_maximum':temperature_maximum_key2.get()['Value'],
-           'temperature_minimum':temperature_minimum_key2.get()['Value'],
-           'humidity_requirement':humidity_requirement_key2.get()['Value']
-           }
+               'active_status': active_status_key2.get()['Value'],
+               'soil_requirement':soil_requirement_key2.get()['Value'],
+               'light_requirement':light_requirement_key2.get()['Value'],
+               'temperature_maximum':temperature_maximum_key2.get()['Value'],
+               'temperature_minimum':temperature_minimum_key2.get()['Value'],
+               'humidity_requirement':humidity_requirement_key2.get()['Value']
+               }
     return default
 
 
