@@ -11,14 +11,15 @@ the project.
 import plant_modules
 import CoT
 import json
-
+from datetime import datetime
+import time
 
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
     # First time python is run (reboot system)
     plant_dictionary = plant_modules.plant_setup()
-    print(plant_dictionary)
-
+    
+    
     while True:
         """
         System main code to be run.
@@ -26,20 +27,22 @@ if __name__ == "__main__":
         # Always checks on if user wants a new plant(create a new or switch), or save a new configuration.
         new_plant = CoT.new_plant_configuration_key2.get()['Value']
         save_configuration = CoT.save_configuration_key2.get()['Value']
-
+        
         # Whenever user wants to store a new configuration or look at what's already stored.
         if (new_plant == 1):
             plant_dictionary = plant_modules.plant_setup()
-
+            
         # Will be true if user wants to save new configuration.
         if (save_configuration == 1):
             plant_number = str(CoT.plant_number_key2.get()['Value'])
             plant_modules.plant_configuration(plant_number, plant_dictionary[plant_number])
-
+    
         #### Update sensor values ####--------------------------------------------------------------------------------------
         for plant_name in range(1, 9):
             if plant_dictionary[str(plant_name)]['active_status']: # Only run if plant is active
+            
                 plant_dictionary = plant_modules.update_plant_sensor_values(plant_dictionary, plant_name)
+                
                 plant_dictionary = plant_modules.update_plant_input_states_state(plant_dictionary, plant_name)
 
                 #### Check sensors ####-----------------------------------------------------------------------------------------
@@ -61,11 +64,10 @@ if __name__ == "__main__":
 
         print('##########################################################')
 
-
+        #Timer that will open json_file and store the dictionary
+        #if (it's been 30min or something), then store the dictionary
         with open('plant_dictionaries_v2.json', 'w') as json_file:
             json.dump(plant_dictionary, json_file)
 
-
-
-
+        #print(plant_dictionary)
         time.sleep(1)
