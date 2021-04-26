@@ -172,54 +172,115 @@ def plant_soil_check(plant_dictionary, plant_name):
 
 
 #### Temperature sensor check ####--------------------------------------------------------------------------------------
+temp_time_tracker = {'0':{'time':time.time(),'control':False},'1':{'time':time.time(),'control':False},
+                     '2':{'time':time.time(),'control':False},'3':{'time':time.time(),'control':False},
+                     '4':{'time':time.time(),'control':False},'5':{'time':time.time(),'control':False},
+                     '6':{'time':time.time(),'control':False},'7':{'time':time.time(),'control':False}}
+
 def checking_temperature(plant_dictionary, plant_name):
+    
+    current_time = time.time()
     
     temp_sensor_keys = [CoT.temp_0_key, CoT.temp_1_key, CoT.temp_2_key, CoT.temp_3_key,
                         CoT.temp_4_key, CoT.temp_5_key, CoT.temp_6_key, CoT.temp_7_key]
     
     temp_value = temp_sensor_keys[plant_name-1].get()['Value']
-    temp_maximum_threshold = plant_dictionary[plant_name]['temperature_maximum']
-    temp_minimum_threshold = plant_dictionary[plant_name]['temperature_minimum']
-    
-    if temp_value > temp_maximum_threshold:
-        print("Hot hot hot hot")
-    elif temp_value < temp_minimum_threshold:
-        print("Why so cold?")
-    else:
-        print("Paradise")
+    temp_maximum_threshold = plant_dictionary[str(plant_name)]['temperature_maximum']
+    temp_minimum_threshold = plant_dictionary[str(plant_name)]['temperature_minimum']
 
+    if(current_time - temp_time_tracker[str(plant_name)]['time'] > 10) and (temp_time_tracker[str(plant_name)]['control'] == True):
+        if temp_value > temp_maximum_threshold:
+            print("Hot hot hot hot")
+            temp_time_tracker[str(plant_name)]['control'] = False
+            return "2"
+        
+        elif temp_value < temp_minimum_threshold:
+            print("Why so cold?")
+            temp_time_tracker[str(plant_name)]['control'] = False
+            return "1"
+        
+        else:
+            print("Paradise")
+            temp_time_tracker[str(plant_name)]['control'] = False
+            return "0"
+        
+        temp_time_tracker[str(plant_name)]['control'] = False
+            
+    elif temp_time_tracker[str(plant_name)]['control'] == False:
+        temp_time_tracker[str(plant_name)]['time'] = time.time()
+        temp_time_tracker[str(plant_name)]['control'] = True
+    else:
+        print("waiting for temp")
+    
 #### Relative humidity sensor check ####--------------------------------------------------------------------------------
+humid_time_tracker = {'0':{'time':time.time(),'control':False},'1':{'time':time.time(),'control':False},
+                      '2':{'time':time.time(),'control':False},'3':{'time':time.time(),'control':False},
+                      '4':{'time':time.time(),'control':False},'5':{'time':time.time(),'control':False},
+                      '6':{'time':time.time(),'control':False},'7':{'time':time.time(),'control':False}}
+
 def checking_humidity(plant_dictionary, plant_name):
+    
+    current_time = time.time()
     
     humid_sensor_keys = [CoT.humid_0_key, CoT.humid_1_key, CoT.humid_2_key, CoT.humid_3_key,
                          CoT.humid_4_key, CoT.humid_5_key, CoT.humid_6_key, CoT.humid_7_key]
     
     humid_value = humid_sensor_keys[plant_name-1].get()['Value']
-    humid_threshold = plant_dictionary[plant_name]['humidity_requirement']
+    humid_threshold = plant_dictionary[str(plant_name)]['humidity_requirement']
     
-    if humid_value < humid_threshold:
-        print("Too dry?")
+    if(current_time - humid_time_tracker[str(plant_name)]['time'] > 20) and (humid_time_tracker[str(plant_name)]['control'] == True):    
+        if humid_value < humid_threshold:
+            print('Air too dry')
+            humid_time_tracker[str(plant_name)]['control'] = False
+            return "1"
+        else:
+            print('Its good enough')
+            humid_time_tracker[str(plant_name)]['control'] = False
+            return "0"
+        
+    elif humid_time_tracker[str(plant_name)]['control'] == False:
+        humid_time_tracker[str(plant_name)]['time'] = time.time()
+        humid_time_tracker[str(plant_name)]['control'] = True
+    
     else:
-        print("Possibility for having too much humidity")
-
-
+        print("waiting for humid")
 #### Ultrasonic sensor/water level check ####---------------------------------------------------------------------------
+watertank_time_tracker = {'0':{'time':time.time(),'control':False},'1':{'time':time.time(),'control':False},
+                          '2':{'time':time.time(),'control':False},'3':{'time':time.time(),'control':False},
+                          '4':{'time':time.time(),'control':False},'5':{'time':time.time(),'control':False},
+                          '6':{'time':time.time(),'control':False},'7':{'time':time.time(),'control':False}}
+
 def checking_water_tank_volume(plant_dictionary, plant_name):
+    
+    current_time = time.time()
     
     ultrasonic_sensor_keys = [CoT.ultrasonic_0_key, CoT.ultrasonic_1_key, CoT.ultrasonic_2_key, CoT.ultrasonic_3_key,
                               CoT.ultrasonic_4_key, CoT.ultrasonic_5_key, CoT.ultrasonic_6_key, CoT.ultrasonic_7_key]
     
     water_tank_volume = ultrasonic_sensor_keys[plant_name-1].get()['Value']
+    if(current_time - watertank_time_tracker[str(plant_name)]['time'] > 30) and (watertank_time_tracker[str(plant_name)]['control'] == True):        
+        if (10 < water_tank_volume and water_tank_volume < 20):
+            print(f"Warning, water level is at {water_tank_volume}%")
+            watertank_time_tracker[str(plant_name)]['control'] = False
+            return "2"
+            
+        elif water_tank_volume < 10:
+            print("Oh no")
+            watertank_time_tracker[str(plant_name)]['control'] = False
+            return "1"
+        
+        else:
+            print('all fine')
+            watertank_time_tracker[str(plant_name)]['control'] = False
+            return "0"
+        
+    elif watertank_time_tracker[str(plant_name)]['control'] == False:
+        watertank_time_tracker[str(plant_name)]['time'] = time.time()
+        watertank_time_tracker[str(plant_name)]['control'] = True
     
-    if (10 < water_tank_volume and water_tank_volume < 20):
-        print(f"Warning, water level is at {water_tank_volume}%")
-        
-    elif water_tank_volume < 10:
-        print("Oh no")
-        
     else:
-        print('all fine')
-
+        print("waiting for watertank")
+    
 #### Pump state & water percentage left in tank (Ultrasonic) ####----------------------------------------------------------------------------------------------------
 
 def water(plant_dictionary, plant_name):

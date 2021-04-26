@@ -43,36 +43,39 @@ while True:
     #print(plant_dictionary)
 
     #### Update sensor values ####--------------------------------------------------------------------------------------
-    for plant_name in range(1, 9): 
+    for plant_name in range(1, 2): 
         if plant_dictionary[str(plant_name)]['active_status']: # Only run if plant is active
         
-            plant_dictionary = plant_modules.update_plant_soil_value(plant_dictionary, plant_name)
+#            plant_dictionary = plant_modules.update_plant_soil_value(plant_dictionary, plant_name)
             
-            plant_dictionary = plant_modules.update_plant_water_state(plant_dictionary, plant_name)
+#            plant_dictionary = plant_modules.update_plant_water_state(plant_dictionary, plant_name)
             
     
             #### Check sensors ####-------------------------------------------------------------------------------------
     
-            plant_dictionary = plant_modules.plant_soil_check(plant_dictionary, plant_name)
+#            plant_dictionary = plant_modules.plant_soil_check(plant_dictionary, plant_name)
+            plant_modules.checking_temperature(plant_dictionary, plant_name)
+            plant_modules.checking_humidity(plant_dictionary, plant_name)
+            plant_modules.checking_water_tank_volume(plant_dictionary, plant_name)
             
             #### Water and light ####-----------------------------------------------------------------------------------
-            plant_modules.water(plant_dictionary, plant_name)
+#            plant_modules.water(plant_dictionary, plant_name)
             
             
         else:
             continue
     
 
-    #### Serial monitor ####--------------------------------------------------------------------------------------------
-    print('##########################################################')
-    print('PLANT STATUSES:')
-    for plant_name in range(1, 3):
-        if plant_dictionary[str(plant_name)]['active_status']:
-            print('\n  Plant', str(plant_name) +':')
-            print('  Soil:', int(plant_dictionary[str(plant_name)]['soil_value']), '    Threshold:', int(plant_dictionary[str(plant_name)]['soil_requirement']))
-            print('  Pump:', plant_dictionary[str(plant_name)]['water'], '  Last given water:', datetime.fromtimestamp(plant_dictionary[str(plant_name)]['last_water']).strftime('%H:%M:%S %d/%m-%Y'))
+    # #### Serial monitor ####--------------------------------------------------------------------------------------------
+    # print('##########################################################')
+    # print('PLANT STATUSES:')
+    # for plant_name in range(1, 3):
+    #     if plant_dictionary[str(plant_name)]['active_status']:
+    #         print('\n  Plant', str(plant_name) +':')
+    #         print('  Soil:', int(plant_dictionary[str(plant_name)]['soil_value']), '    Threshold:', int(plant_dictionary[str(plant_name)]['soil_requirement']))
+    #         print('  Pump:', plant_dictionary[str(plant_name)]['water'], '  Last given water:', datetime.fromtimestamp(plant_dictionary[str(plant_name)]['last_water']).strftime('%H:%M:%S %d/%m-%Y'))
 
-    print('##########################################################')
+    # print('##########################################################')
 
 
     with open('plant_dictionaries_v2.json', 'w') as json_file:
