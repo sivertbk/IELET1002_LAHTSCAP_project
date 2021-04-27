@@ -1,5 +1,5 @@
 # @Date:   2021-04-24T13:38:04+02:00
-# @Last modified time: 2021-04-27T16:35:03+02:00
+# @Last modified time: 2021-04-27T18:35:38+02:00
 
 
 
@@ -193,53 +193,221 @@ def plant_soil_check(plant_dictionary, plant_name):
 
 
 #### Temperature sensor check ####--------------------------------------------------------------------------------------
+"""
+A dictionary where time will be stored, if it's control checking up against time, and which stage we are in.
+"""
+temp_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{'time':time.time(), 'control':False, "stage":0},
+                     '3':{'time':time.time(), 'control':False, "stage":0},'4':{'time':time.time(), 'control':False, "stage":0},
+                     '5':{'time':time.time(), 'control':False, "stage":0},'6':{'time':time.time(), 'control':False, "stage":0},
+                     '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
+
+# A list over each plants unique sensor key from CoT file.
+temp_sensor_keys = [CoT.temp_1_key, CoT.temp_2_key, CoT.temp_3_key, CoT.temp_4_key,
+                    CoT.temp_5_key, CoT.temp_6_key, CoT.temp_7_key, CoT.temp_8_key]
+
+
 def checking_temperature(plant_dictionary, plant_name):
+    """
+    Compare sensor values with threshold value, and returns back what state a chosen plant is in.
+    """
 
-    temp_sensor_keys = [CoT.temp_0_key, CoT.temp_1_key, CoT.temp_2_key, CoT.temp_3_key,
-                        CoT.temp_4_key, CoT.temp_5_key, CoT.temp_6_key, CoT.temp_7_key]
+    # Created and stored everytime function is run
+    current_time = time.time()
 
-    temp_value = temp_sensor_keys[plant_name-1].get()['Value']
-    temp_maximum_threshold = plant_dictionary[plant_name]['temperature_maximum']
-    temp_minimum_threshold = plant_dictionary[plant_name]['temperature_minimum']
 
-    if temp_value > temp_maximum_threshold:
-        print("Hot hot hot hot")
-    elif temp_value < temp_minimum_threshold:
-        print("Why so cold?")
+    # If the time has passed more than chosen time AND we're in control mode (means we've run it once before) or this is the begininng of the stage, we would like to compare sensor values with threshold values
+    ## Delete this row comment ## : As long as sensors always fine, this part will run always. Maybe need a control variable to make sure it doesn't run too often if everythings fine.
+    if((current_time - temp_time_tracker[str(plant_name)]['time'] > 10) and (temp_time_tracker[str(plant_name)]['control'] == True)) or (temp_time_tracker[str(plant_name)]['stage'] == 0):
+
+        # Make sure we're reseting control variable, so timer will run again.
+        temp_time_tracker[str(plant_name)]['control'] = False
+
+        # Get following values: The value stored in CoT, the thresholds value stored in dictionary from user input.
+        temp_value = temp_sensor_keys[plant_name-1].get()['Value']
+        temp_maximum_threshold = plant_dictionary[str(plant_name)]['temperature_maximum']
+        temp_minimum_threshold = plant_dictionary[str(plant_name)]['temperature_minimum']
+
+        # If sensor value is over threshold
+        if temp_value > temp_maximum_threshold:
+
+            # And change the stages of how many times this if statement has been true.
+            if temp_time_tracker[str(plant_name)]['stage'] == 0:
+                temp_time_tracker[str(plant_name)]['stage'] = 1
+
+            elif temp_time_tracker[str(plant_name)]['stage'] == 1:
+                temp_time_tracker[str(plant_name)]['stage'] = 2
+
+            # If it's been true three times, then we want to send an email about it.
+            elif temp_time_tracker[str(plant_name)]['stage'] == 2:
+                temp_time_tracker[str(plant_name)]['stage'] = 0
+                print("email how hot it is")
+
+            # If there's a different stage stored, then change it to 1 as it's "first time" following if statement has been true.
+            else:
+                temp_time_tracker[str(plant_name)]['stage'] = 1
+
+            return 2 # Return a state value that is going to be added to array sent back to ESP through Circus of Things.
+
+        # If sensor values are lower than threshold value
+        elif temp_value < temp_minimum_threshold:
+
+            # Change the stage with how many times this particular if statement has been true
+            if temp_time_tracker[str(plant_name)]['stage'] == 0:
+                temp_time_tracker[str(plant_name)]['stage'] = 3
+
+            elif temp_time_tracker[str(plant_name)]['stage'] == 3:
+                temp_time_tracker[str(plant_name)]['stage'] = 4
+
+            # If it's been true three times in row, we reset the stage, and send an email warning.
+            elif temp_time_tracker[str(plant_name)]['stage'] == 4:
+                temp_time_tracker[str(plant_name)]['stage'] = 0
+                print("email how cold it is")
+
+            # If a different stage is stored, then it's the first time this statement has been true, and we change stage.
+            else:
+                temp_time_tracker[str(plant_name)]['stage'] = 3
+
+            return 1 # Return a state value that is going to be added to array sent back to ESP through Circus of Things.
+
+        # Otherwise everythings is okay, and we'll return a state saying so.
+        else:
+            temp_time_tracker[str(plant_name)]['stage'] = 0
+            return 0
+        print('return temp state')
+
+    # if first if statement was false, and the system is not in control mode, then start control mode and update time when it started.
+    elif temp_time_tracker[str(plant_name)]['control'] == False:
+        temp_time_tracker[str(plant_name)]['time'] = time.time()
+        temp_time_tracker[str(plant_name)]['control'] = True
+        print('start control of temp')
+
+    # If none of the statements are true, then it means the system is currently running in control mode.
     else:
-        print("Paradise")
+        print(f"waiting for temp for plant {plant_name}")
 
 #### Relative humidity sensor check ####--------------------------------------------------------------------------------
+"""
+A dictionary where time will be stored, if it's control checking up against time, and which stage we are in.
+"""
+
+humid_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{'time':time.time(), 'control':False, "stage":0},
+                      '3':{'time':time.time(), 'control':False, "stage":0},'4':{'time':time.time(), 'control':False, "stage":0},
+                      '5':{'time':time.time(), 'control':False, "stage":0},'6':{'time':time.time(), 'control':False, "stage":0},
+                      '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
+
+# A list over each plants unique sensor key from CoT file.
+humid_sensor_keys = CoT.humid_value_key_list
+
 def checking_humidity(plant_dictionary, plant_name):
+    """
+    Compare sensor values with threshold value, and returns back what state a chosen plant is in.
+    """
 
-    humid_sensor_keys = [CoT.humid_0_key, CoT.humid_1_key, CoT.humid_2_key, CoT.humid_3_key,
-                         CoT.humid_4_key, CoT.humid_5_key, CoT.humid_6_key, CoT.humid_7_key]
+    # Created and stored  to a variable, whenever function is run
+    current_time = time.time()
 
-    humid_value = humid_sensor_keys[plant_name-1].get()['Value']
-    humid_threshold = plant_dictionary[plant_name]['humidity_requirement']
+    # If the time has passed more than chosen time AND we're in control mode (means we've run it once before) or this is the begininng of the stage, we would like to compare sensor values with threshold values
+    ## Delete this row comment ## : As long as sensors always fine, this part will run always. Maybe need a control variable to make sure it doesn't run too often if everythings fine.
+    if((current_time - humid_time_tracker[str(plant_name)]['time'] > 20) and (humid_time_tracker[str(plant_name)]['control'] == True)) or (humid_time_tracker[str(plant_name)]['stage'] == 0):
 
-    if humid_value < humid_threshold:
-        print("Too dry?")
+        # Get following values: The humid value stored in CoT and the threshold value stored in dictionary from user input.
+        humid_threshold = plant_dictionary[str(plant_name)]['humidity_requirement']
+        humid_value = humid_sensor_keys[plant_name-1].get()['Value']
+
+        # Reset the control variable, so we can start a new control check for next time.
+        humid_time_tracker[str(plant_name)]['control'] = False
+
+        # If humid value is lower than threshold value
+        if humid_value < humid_threshold:
+            print('Air too dry')
+
+            # Update the stage variable based on how many times the if-statement has been true.
+            if humid_time_tracker[str(plant_name)]['stage'] == 0:
+                humid_time_tracker[str(plant_name)]['stage'] = 1
+
+            elif humid_time_tracker[str(plant_name)]['stage'] == 1:
+                humid_time_tracker[str(plant_name)]['stage'] = 2
+
+            # After three true statements with no changes, then email owner about it.
+            elif humid_time_tracker[str(plant_name)]['stage'] == 2:
+                humid_time_tracker[str(plant_name)]['stage'] = 0
+                print('email about dryness')
+            return 1
+
+        # The humidity is good enough
+        else:
+            print('Its good enough')
+            humid_time_tracker[str(plant_name)]['control'] = False
+            humid_time_tracker[str(plant_name)]['stage'] = 0
+            return 0
+
+        print('Return humid state')
+
+    # If we've alreadu compared values, then previous statement is false, and we would like to run a control mode, checking if system should warn the owner about the state.
+    elif humid_time_tracker[str(plant_name)]['control'] == False:
+        humid_time_tracker[str(plant_name)]['time'] = time.time()
+        humid_time_tracker[str(plant_name)]['control'] = True
+        print('start humid control')
+
+    # System is currently running in a control mode for humidity sensor.
     else:
-        print("Possibility for having too much humidity")
-
+        print(f"waiting for humid for plant {plant_name}")
 
 #### Ultrasonic sensor/water level check ####---------------------------------------------------------------------------
+"""
+A dictionary where time will be stored, if it's control checking up against time, and which stage we are in.
+"""
+watertank_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{'time':time.time(), 'control':False, "stage":0},
+                          '3':{'time':time.time(), 'control':False, "stage":0},'4':{'time':time.time(), 'control':False, "stage":0},
+                          '5':{'time':time.time(), 'control':False, "stage":0},'6':{'time':time.time(), 'control':False, "stage":0},
+                          '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
+
+# A list over each plants unique sensor key from CoT file.
+ultrasonic_sensor_keys = CoT.ultrasonic_value_key_list
+
 def checking_water_tank_volume(plant_dictionary, plant_name):
+    """
+    Checking how much water that are left in the tank.
+    """
 
-    ultrasonic_sensor_keys = [CoT.ultrasonic_0_key, CoT.ultrasonic_1_key, CoT.ultrasonic_2_key, CoT.ultrasonic_3_key,
-                              CoT.ultrasonic_4_key, CoT.ultrasonic_5_key, CoT.ultrasonic_6_key, CoT.ultrasonic_7_key]
+    # Created and stored  to a variable, whenever function is run
+    current_time = time.time()
 
-    water_tank_volume = ultrasonic_sensor_keys[plant_name-1].get()['Value']
+    # If there has passed an amount of time since last checking the water OR if the pump has recently pumped water, then control how much water is left.
+    if((current_time - watertank_time_tracker[str(plant_name)]['time'] > 30) and (watertank_time_tracker[str(plant_name)]['control'] == True)) or (current_time - plant_dictionary[str(plant_name)]['last_water'] < 10):
 
-    if (10 < water_tank_volume and water_tank_volume < 20):
-        print(f"Warning, water level is at {water_tank_volume}%")
+        # Get the values from ultrasonic sensor for chosen plant
+        water_tank_volume = ultrasonic_sensor_keys[plant_name-1].get()['Value']
 
-    elif water_tank_volume < 10:
-        print("Oh no")
+        # Reset the control mode for this function
+        watertank_time_tracker[str(plant_name)]['control'] = False
 
+        # If the water level is between 20 and 10 percent, then return the state representing that
+        if (10 < water_tank_volume and water_tank_volume < 20):
+            print(f"Warning, water level is at {water_tank_volume}%")
+            return 2
+
+        # If it's less than 10 percent, email owner & return the state.
+        elif water_tank_volume < 10:
+            print("Email owner about it")
+            return 1
+
+        # Otherwise the tank has enough water for now.
+        else:
+            print('all fine')
+            return 0
+
+        print('return water tank state')
+
+    # Start control mode if the pump hasn't recently been active or it hasn't been a while since last time sensor been checked.
+    elif watertank_time_tracker[str(plant_name)]['control'] == False:
+        watertank_time_tracker[str(plant_name)]['time'] = time.time()
+        watertank_time_tracker[str(plant_name)]['control'] = True
+        print('start watertank control')
+
+    # Function is currently in control mode, checking up on how much time has passed.
     else:
-        print('all fine')
+        print(f"waiting for watertank for plant {plant_name}")
 
 #### Pump state & water percentage left in tank (Ultrasonic) ####-------------------------------------------------------
 
