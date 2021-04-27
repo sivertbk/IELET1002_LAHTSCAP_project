@@ -239,10 +239,13 @@ def checking_temperature(plant_dictionary, plant_name):
             temp_time_tracker[str(plant_name)]['control'] = False
             temp_time_tracker[str(plant_name)]['stage'] = 0
             return "0"
-            
+        print('return temp state')  
+         
     elif temp_time_tracker[str(plant_name)]['control'] == False:
         temp_time_tracker[str(plant_name)]['time'] = time.time()
         temp_time_tracker[str(plant_name)]['control'] = True
+        print('start control of temp')  
+        
     else:
         print(f"waiting for temp for plant {plant_name}")
     
@@ -288,10 +291,12 @@ def checking_humidity(plant_dictionary, plant_name):
             humid_time_tracker[str(plant_name)]['control'] = False
             humid_time_tracker[str(plant_name)]['stage'] = 0
             return "0"
-        
+        print('Return humid state')  
+    
     elif humid_time_tracker[str(plant_name)]['control'] == False:
         humid_time_tracker[str(plant_name)]['time'] = time.time()
         humid_time_tracker[str(plant_name)]['control'] = True
+        print('start humid control')  
     
     else:
         print(f"waiting for humid for plant {plant_name}")
@@ -330,10 +335,12 @@ def checking_water_tank_volume(plant_dictionary, plant_name):
             print('all fine')
             watertank_time_tracker[str(plant_name)]['control'] = False
             return "0"
+        print('return water tank state')  
         
     elif watertank_time_tracker[str(plant_name)]['control'] == False:
         watertank_time_tracker[str(plant_name)]['time'] = time.time()
         watertank_time_tracker[str(plant_name)]['control'] = True
+        print('start watertank control')  
     
     else:
         print(f"waiting for watertank for plant {plant_name}")
