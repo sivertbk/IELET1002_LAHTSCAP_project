@@ -1,5 +1,5 @@
 # @Date:   2021-04-21T16:31:52+02:00
-# @Last modified time: 2021-04-27T13:24:34+02:00
+# @Last modified time: 2021-04-27T16:41:46+02:00
 
 import requests
 import json
@@ -146,17 +146,18 @@ plant_state_array_list = [COT_Signal(plant_1_system_state_key, token),  # Plant 
 
 #### CoT signal array functions ####------------------------------------------------------------------------------------
 
-def encode_plant_system_states(plant_name):
+def encode_plant_system_states(plant_dictionary, plant_name):
     """
     This function takes a plant's inputs(pump, light, etc.) and arranges it to an array ready to be sent to CoT.
     First number in return value represents plant number so the value always stays the same length.
     """
+    state_value = ''
     array = [int(plant_name)]
     # get statuses and store value in array
     array.append(plant_dictionary[str(plant_name)]['pump_state'])
     array.append(plant_dictionary[str(plant_name)]['light_state'])
-    array.append(plant_dictionary[str(plant_name)]['temp_state'])
-    array.append(plant_dictionary[str(plant_name)]['humid_state'])
+    array.append(plant_dictionary[str(plant_name)]['temperature_state'])
+    array.append(plant_dictionary[str(plant_name)]['humidity_state'])
     array.append(plant_dictionary[str(plant_name)]['water_level_state'])
 
     # make array into a value to be sent

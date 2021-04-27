@@ -1,5 +1,5 @@
 # @Date:   2021-04-21T14:03:41+02:00
-# @Last modified time: 2021-04-27T13:26:18+02:00
+# @Last modified time: 2021-04-27T16:58:01+02:00
 
 
 
@@ -55,8 +55,9 @@ while True:
 
             plant_dictionary = plant_modules.plant_soil_check(plant_dictionary, plant_name)
 
-            #### Water and light ####-----------------------------------------------------------------------------------
-            plant_modules.put_system_states_to_CoT(plant_dictionary, plant_name)
+            #### Put updated states to CoT ####-------------------------------------------------------------------------
+
+            plant_dictionary = plant_modules.put_system_states_to_CoT(plant_dictionary, plant_name)
 
 
         else:
@@ -70,7 +71,7 @@ while True:
         if plant_dictionary[str(plant_name)]['active_status']:
             print('\n  Plant', str(plant_name) +':')
             print('  Soil:', int(plant_dictionary[str(plant_name)]['soil_value']), '    Threshold:', int(plant_dictionary[str(plant_name)]['soil_requirement']))
-            print('  Pump:', plant_dictionary[str(plant_name)]['pump_state'], '  Last given water:', datetime.fromtimestamp(plant_dictionary[str(plant_name)]['last_water']).strftime('%H:%M:%S %d/%m-%Y'))
+            print('  Pump:', plant_dictionary[str(plant_name)]['pump_state'], '     Last given water:', datetime.fromtimestamp(plant_dictionary[str(plant_name)]['last_water']).strftime('%H:%M:%S %d/%m-%Y'))
         else:
             continue
 

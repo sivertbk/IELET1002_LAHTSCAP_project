@@ -1,5 +1,5 @@
 # @Date:   2021-04-24T13:38:04+02:00
-# @Last modified time: 2021-04-27T12:14:32+02:00
+# @Last modified time: 2021-04-27T16:35:03+02:00
 
 
 
@@ -95,7 +95,7 @@ def plant_configuration(plant_number,plant_configuration):
 
 
 
-#### Update sensor values ####------------------------------------------------------------------------------------------
+#### Update plant_dictionary from CoT ####------------------------------------------------------------------------------
 
 def update_plant_sensor_values(plant_dictionary, plant_name):
     """
@@ -132,8 +132,6 @@ def update_plant_system_states(plant_dictionary, plant_name):
     plant_dictionary[str(plant_name)]['humidity_state'] = plant_state_dict['humid_state']
     plant_dictionary[str(plant_name)]['water_level_state'] = plant_state_dict['water_level_state']
     return plant_dictionary
-
-
 
 
 #### Soil moisture check ####-------------------------------------------------------------------------------------------
@@ -250,13 +248,14 @@ def put_system_states_to_CoT(plant_dictionary, plant_name):
     This function reads the states from plant dictionary before it encodes the states and uploads the system states
     to CoT.
     """
-    plant_pump_keys = [CoT.pump_0_key, CoT.pump_1_key, CoT.pump_2_key, CoT.pump_3_key, CoT.pump_4_key, CoT.pump_5_key, CoT.pump_6_key, CoT.pump_7_key]
-    if plant_dictionary[str(plant_name)]['pump_state']:
+    # encode states from plant dictionary
+    system_states = CoT.encode_plant_system_states(plant_dictionary, plant_name)
+    # put states to CoT
+    CoT.plant_state_array_list[plant_name - 1].put(system_states)
+    # update last watering if pump_state is not 0
+    if plant_dictionary[str(plant_name)]['pump_state'] != 0:
         plant_dictionary[str(plant_name)]['last_water'] = int(time.time())
-        plant_pump_keys[int(plant_name)-1].put(1)
-        return
-    else:
-        return
+    return plant_dictionary
 
 
 #### Light state ####---------------------------------------------------------------------------------------------------
