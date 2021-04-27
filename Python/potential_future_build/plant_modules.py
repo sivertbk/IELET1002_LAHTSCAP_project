@@ -193,6 +193,7 @@ def plant_soil_check(plant_dictionary, plant_name):
 
 
 #### Temperature sensor check ####--------------------------------------------------------------------------------------
+
 """
 A dictionary where time will be stored, if it's control checking up against time, and which stage we are in.
 """
@@ -201,13 +202,16 @@ temp_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{'
                      '5':{'time':time.time(), 'control':False, "stage":0},'6':{'time':time.time(), 'control':False, "stage":0},
                      '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
 
+
 # A list over each plants unique sensor key from CoT file.
 temp_sensor_keys = [CoT.temp_1_key, CoT.temp_2_key, CoT.temp_3_key, CoT.temp_4_key,
                     CoT.temp_5_key, CoT.temp_6_key, CoT.temp_7_key, CoT.temp_8_key]
 
 
+
 def checking_temperature(plant_dictionary, plant_name):
     """
+
     Compare sensor values with threshold value, and returns back what state a chosen plant is in.
     """
 
@@ -279,11 +283,13 @@ def checking_temperature(plant_dictionary, plant_name):
     elif temp_time_tracker[str(plant_name)]['control'] == False:
         temp_time_tracker[str(plant_name)]['time'] = time.time()
         temp_time_tracker[str(plant_name)]['control'] = True
+
         print('start control of temp')
 
     # If none of the statements are true, then it means the system is currently running in control mode.
     else:
         print(f"waiting for temp for plant {plant_name}")
+
 
 #### Relative humidity sensor check ####--------------------------------------------------------------------------------
 """
@@ -294,6 +300,7 @@ humid_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{
                       '3':{'time':time.time(), 'control':False, "stage":0},'4':{'time':time.time(), 'control':False, "stage":0},
                       '5':{'time':time.time(), 'control':False, "stage":0},'6':{'time':time.time(), 'control':False, "stage":0},
                       '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
+
 
 # A list over each plants unique sensor key from CoT file.
 humid_sensor_keys = CoT.humid_value_key_list
@@ -334,12 +341,14 @@ def checking_humidity(plant_dictionary, plant_name):
                 print('email about dryness')
             return 1
 
+
         # The humidity is good enough
         else:
             print('Its good enough')
             humid_time_tracker[str(plant_name)]['control'] = False
             humid_time_tracker[str(plant_name)]['stage'] = 0
             return 0
+
 
         print('Return humid state')
 
@@ -352,6 +361,7 @@ def checking_humidity(plant_dictionary, plant_name):
     # System is currently running in a control mode for humidity sensor.
     else:
         print(f"waiting for humid for plant {plant_name}")
+
 
 #### Ultrasonic sensor/water level check ####---------------------------------------------------------------------------
 """
@@ -382,20 +392,24 @@ def checking_water_tank_volume(plant_dictionary, plant_name):
         # Reset the control mode for this function
         watertank_time_tracker[str(plant_name)]['control'] = False
 
+
         # If the water level is between 20 and 10 percent, then return the state representing that
         if (10 < water_tank_volume and water_tank_volume < 20):
             print(f"Warning, water level is at {water_tank_volume}%")
             return 2
+
 
         # If it's less than 10 percent, email owner & return the state.
         elif water_tank_volume < 10:
             print("Email owner about it")
             return 1
 
+
         # Otherwise the tank has enough water for now.
         else:
             print('all fine')
             return 0
+
 
         print('return water tank state')
 
@@ -411,11 +425,13 @@ def checking_water_tank_volume(plant_dictionary, plant_name):
 
 #### Pump state & water percentage left in tank (Ultrasonic) ####-------------------------------------------------------
 
+
 def put_system_states_to_CoT(plant_dictionary, plant_name):
     """
     This function reads the states from plant dictionary before it encodes the states and uploads the system states
     to CoT.
     """
+
     # encode states from plant dictionary
     system_states = CoT.encode_plant_system_states(plant_dictionary, plant_name)
     # put states to CoT
@@ -424,6 +440,7 @@ def put_system_states_to_CoT(plant_dictionary, plant_name):
     if plant_dictionary[str(plant_name)]['pump_state'] != 0:
         plant_dictionary[str(plant_name)]['last_water'] = int(time.time())
     return plant_dictionary
+
 
 
 #### Light state ####---------------------------------------------------------------------------------------------------

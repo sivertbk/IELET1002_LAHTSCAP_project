@@ -43,7 +43,9 @@ while True:
     #print(plant_dictionary)
 
     #### Update sensor values ####--------------------------------------------------------------------------------------
+
     for plant_name in range(1, 2):
+
         if plant_dictionary[str(plant_name)]['active_status']: # Only run if plant is active
 
             plant_dictionary = plant_modules.update_plant_sensor_values_v2(plant_dictionary, plant_name)
@@ -55,6 +57,7 @@ while True:
 
             plant_dictionary = plant_modules.plant_soil_check(plant_dictionary, plant_name)
 
+
             plant_modules.checking_temperature(plant_dictionary, plant_name)
             plant_modules.checking_humidity(plant_dictionary, plant_name)
             plant_modules.checking_water_tank_volume(plant_dictionary, plant_name)
@@ -62,6 +65,7 @@ while True:
             #### Put updated states to CoT ####-------------------------------------------------------------------------
 
             plant_dictionary = plant_modules.put_system_states_to_CoT(plant_dictionary, plant_name)
+
 
 
         else:
