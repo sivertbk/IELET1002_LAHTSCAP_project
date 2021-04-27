@@ -1,5 +1,5 @@
 # @Date:   2021-04-24T13:38:04+02:00
-# @Last modified time: 2021-04-26T16:43:04+02:00
+# @Last modified time: 2021-04-27T12:14:32+02:00
 
 
 
@@ -109,6 +109,17 @@ def update_plant_sensor_values(plant_dictionary, plant_name):
     plant_dictionary[str(plant_name)]['water_level'] = plant_sensor_dict['water_level']
     return plant_dictionary
 
+def update_plant_sensor_values_v2(plant_dictionary, plant_name):
+    """
+    This function takes the given plant's dictionary and updates sensor values, then returns updated dictionary.
+    """
+    plant_dictionary[str(plant_name)]['soil_value'] = CoT.soil_value_key_list[plant_name - 1].get()['Value']
+    plant_dictionary[str(plant_name)]['lux_value'] = CoT.lux_value_key_list[plant_name - 1].get()['Value']
+    plant_dictionary[str(plant_name)]['temperature_value'] = CoT.temp_value_key_list[plant_name - 1].get()['Value']
+    plant_dictionary[str(plant_name)]['humidity_value'] = CoT.humid_value_key_list[plant_name - 1].get()['Value']
+    plant_dictionary[str(plant_name)]['water_level'] = CoT.ultrasonic_value_key_list[plant_name - 1].get()['Value']
+    return plant_dictionary
+
 
 def update_plant_system_states(plant_dictionary, plant_name):
     """
@@ -131,9 +142,9 @@ def update_plant_system_states(plant_dictionary, plant_name):
 # Dictionary of timestampes for when soil control started for each plant
 soil_time_tracker = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0,'7':0,'8':0}
 # Dictionary of booleans for each plant if soil control is in progress or not
-soil_control = {'0':False,'1':False,'2':False,'3':False,'4':False,'5':False,'6':False,'7':False}
+soil_control = {'1':False,'2':False,'3':False,'4':False,'5':False,'6':False,'7':False,'8':False}
 # Dictionary of booleans for each plant if the soil value is over given water requirement
-soil_over_threshold = {'0':True,'1':True,'2':True,'3':True,'4':True,'5':True,'6':True,'7':True}
+soil_over_threshold = {'1':True,'2':True,'3':True,'4':True,'5':True,'6':True,'7':True,'8':True}
 # Time of control check for soil in seconds. 30 minutes = 1800 seconds
 plant_soil_check_control_time = 20
 # Interval time between watering a plant in seconds. 12 Hours interval = 43200 seconds

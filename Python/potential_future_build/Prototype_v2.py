@@ -1,5 +1,5 @@
 # @Date:   2021-04-21T14:03:41+02:00
-# @Last modified time: 2021-04-26T15:52:22+02:00
+# @Last modified time: 2021-04-27T13:26:18+02:00
 
 
 
@@ -46,9 +46,9 @@ while True:
     for plant_name in range(1, 9):
         if plant_dictionary[str(plant_name)]['active_status']: # Only run if plant is active
 
-            plant_dictionary = plant_modules.update_plant_sensor_values(plant_dictionary, plant_name)
+            plant_dictionary = plant_modules.update_plant_sensor_values_v2(plant_dictionary, plant_name)
 
-            plant_dictionary = plant_modules.update_plant_input_states_state(plant_dictionary, plant_name)
+            plant_dictionary = plant_modules.update_plant_system_states(plant_dictionary, plant_name)
 
 
             #### Check sensors ####-------------------------------------------------------------------------------------
@@ -56,7 +56,7 @@ while True:
             plant_dictionary = plant_modules.plant_soil_check(plant_dictionary, plant_name)
 
             #### Water and light ####-----------------------------------------------------------------------------------
-            plant_modules.water(plant_dictionary, plant_name)
+            plant_modules.put_system_states_to_CoT(plant_dictionary, plant_name)
 
 
         else:

@@ -1,5 +1,5 @@
 # @Date:   2021-04-21T16:31:52+02:00
-# @Last modified time: 2021-04-26T20:32:49+02:00
+# @Last modified time: 2021-04-27T13:24:34+02:00
 
 import requests
 import json
@@ -153,8 +153,8 @@ def encode_plant_system_states(plant_name):
     """
     array = [int(plant_name)]
     # get statuses and store value in array
-    array.append(plant_dictionary[str(plant_name)]['water'])
-    array.append(plant_dictionary[str(plant_name)]['light'])
+    array.append(plant_dictionary[str(plant_name)]['pump_state'])
+    array.append(plant_dictionary[str(plant_name)]['light_state'])
     array.append(plant_dictionary[str(plant_name)]['temp_state'])
     array.append(plant_dictionary[str(plant_name)]['humid_state'])
     array.append(plant_dictionary[str(plant_name)]['water_level_state'])
@@ -220,75 +220,116 @@ def decode_sensor_values(plant_name, sensor = 'default'):
 
 
 
-#### Plant sensor and output signal keys ####---------------------------------------------------------------------------
-
-#### OUTDATED!!!!!!!! will be removed.
-
-# Plant 0 keys
-soil_0_key = COT_Signal("4991", token)
-pump_0_key = COT_Signal('32607', token)
-light_0_key = COT_Signal('17733', token)
-temp_0_key = COT_Signal('2615', token)
-humid_0_key = COT_Signal('10571', token)
-ultrasonic_0_key = COT_Signal('28799', token)
+#### Plant sensor signal keys ####--------------------------------------------------------------------------------------
 
 
 # Plant 1 keys
-soil_1_key = COT_Signal("28439", token)
-pump_1_key = COT_Signal('20416', token)
-light_1_key = COT_Signal('', token)
-temp_1_key = COT_Signal('', token)
-humid_1_key = COT_Signal('', token)
-ultrasonic_1_key = COT_Signal('', token)
-
+soil_1_key = COT_Signal('4991', token)
+lux_1_key = COT_Signal('17733', token)
+temp_1_key = COT_Signal('2615', token)
+humid_1_key = COT_Signal('10571', token)
+ultrasonic_1_key = COT_Signal('28799', token)
 
 # Plant 2 keys
-soil_2_key = COT_Signal('', token)
-pump_2_key = COT_Signal('', token)
-light_2_key = COT_Signal('', token)
-temp_2_key = COT_Signal('', token)
-humid_2_key = COT_Signal('', token)
-ultrasonic_2_key = COT_Signal('', token)
+soil_2_key = COT_Signal('28439', token)
+lux_2_key = COT_Signal('11506', token)
+temp_2_key = COT_Signal('19999', token)
+humid_2_key = COT_Signal('21403', token)
+ultrasonic_2_key = COT_Signal('4652', token)
 
 # Plant 3 keys
 soil_3_key = COT_Signal('', token)
-pump_3_key = COT_Signal('', token)
-light_3_key = COT_Signal('', token)
+lux_3_key = COT_Signal('', token)
 temp_3_key = COT_Signal('', token)
 humid_3_key = COT_Signal('', token)
 ultrasonic_3_key = COT_Signal('', token)
 
 # Plant 4 keys
 soil_4_key = COT_Signal('', token)
-pump_4_key = COT_Signal('', token)
-light_4_key = COT_Signal('', token)
+lux_4_key = COT_Signal('', token)
 temp_4_key = COT_Signal('', token)
 humid_4_key = COT_Signal('', token)
 ultrasonic_4_key = COT_Signal('', token)
 
 # Plant 5 keys
 soil_5_key = COT_Signal('', token)
-pump_5_key = COT_Signal('', token)
-light_5_key = COT_Signal('', token)
+lux_5_key = COT_Signal('', token)
 temp_5_key = COT_Signal('', token)
 humid_5_key = COT_Signal('', token)
 ultrasonic_5_key = COT_Signal('', token)
 
 # Plant 6 keys
 soil_6_key = COT_Signal('', token)
-pump_6_key = COT_Signal('', token)
-light_6_key = COT_Signal('', token)
+lux_6_key = COT_Signal('', token)
 temp_6_key = COT_Signal('', token)
 humid_6_key = COT_Signal('', token)
 ultrasonic_6_key = COT_Signal('', token)
 
 # Plant 7 keys
 soil_7_key = COT_Signal('', token)
-pump_7_key = COT_Signal('', token)
-light_7_key = COT_Signal('', token)
+lux_7_key = COT_Signal('', token)
 temp_7_key = COT_Signal('', token)
 humid_7_key = COT_Signal('', token)
 ultrasonic_7_key = COT_Signal('', token)
+
+# Plant 8 keys
+soil_8_key = COT_Signal('', token)
+lux_8_key = COT_Signal('', token)
+temp_8_key = COT_Signal('', token)
+humid_8_key = COT_Signal('', token)
+ultrasonic_8_key = COT_Signal('', token)
+
+
+
+soil_value_key_list = [soil_1_key,
+                       soil_2_key,
+                       soil_3_key,
+                       soil_4_key,
+                       soil_5_key,
+                       soil_6_key,
+                       soil_7_key,
+                       soil_8_key
+                       ]
+
+lux_value_key_list = [lux_1_key,
+                      lux_2_key,
+                      lux_3_key,
+                      lux_4_key,
+                      lux_5_key,
+                      lux_6_key,
+                      lux_7_key,
+                      lux_8_key
+                      ]
+
+temp_value_key_list = [temp_1_key,
+                       temp_2_key,
+                       temp_3_key,
+                       temp_4_key,
+                       temp_5_key,
+                       temp_6_key,
+                       temp_7_key,
+                       temp_8_key
+                       ]
+
+humid_value_key_list = [humid_1_key,
+                        humid_2_key,
+                        humid_3_key,
+                        humid_4_key,
+                        humid_5_key,
+                        humid_6_key,
+                        humid_7_key,
+                        humid_8_key
+                        ]
+
+ultrasonic_value_key_list = [ultrasonic_1_key,
+                             ultrasonic_2_key,
+                             ultrasonic_3_key,
+                             ultrasonic_4_key,
+                             ultrasonic_5_key,
+                             ultrasonic_6_key,
+                             ultrasonic_7_key,
+                             ultrasonic_8_key
+                             ]
 
 
 
@@ -299,4 +340,3 @@ if __name__ == "__main__":
         print(signal)
         time.sleep(1)
     '''
-    COT_Signal('27693', token).put(1100001000.100100110)
