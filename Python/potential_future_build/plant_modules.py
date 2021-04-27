@@ -1,5 +1,5 @@
 # @Date:   2021-04-24T13:38:04+02:00
-# @Last modified time: 2021-04-27T18:35:38+02:00
+# @Last modified time: 2021-04-27T20:16:28+02:00
 
 
 
@@ -164,8 +164,9 @@ def plant_soil_check(plant_dictionary, plant_name):
     water_interval = plant_water_interval
     control_wait_time = plant_soil_check_control_time
 
+    # Checking if current soil moisture is under requirement and if it is more than 'water_interval' seconds since last water
     if (soil_value < Threshold) and ((current_time - last_water) > water_interval):
-        soil_over_threshold[str(plant_name)] = False
+        #soil_over_threshold[str(plant_name)] = False # If statement passes,
         if soil_control[str(plant_name)]:
             if (current_time - soil_time_tracker[str(plant_name)]) > control_wait_time:
                 soil_control[str(plant_name)] = False
@@ -182,7 +183,7 @@ def plant_soil_check(plant_dictionary, plant_name):
 
     else:
         soil_control[str(plant_name)] = False
-        soil_over_threshold[str(plant_name)] = True
+        #soil_over_threshold[str(plant_name)] = True
         return plant_dictionary
     return plant_dictionary
 
@@ -203,12 +204,6 @@ temp_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{'
                      '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
 
 
-# A list over each plants unique sensor key from CoT file.
-temp_sensor_keys = [CoT.temp_1_key, CoT.temp_2_key, CoT.temp_3_key, CoT.temp_4_key,
-                    CoT.temp_5_key, CoT.temp_6_key, CoT.temp_7_key, CoT.temp_8_key]
-
-
-
 def checking_temperature(plant_dictionary, plant_name):
     """
 
@@ -227,7 +222,7 @@ def checking_temperature(plant_dictionary, plant_name):
         temp_time_tracker[str(plant_name)]['control'] = False
 
         # Get following values: The value stored in CoT, the thresholds value stored in dictionary from user input.
-        temp_value = temp_sensor_keys[plant_name-1].get()['Value']
+        temp_value = CoT.temp_value_key_list[plant_name-1].get()['Value']
         temp_maximum_threshold = plant_dictionary[str(plant_name)]['temperature_maximum']
         temp_minimum_threshold = plant_dictionary[str(plant_name)]['temperature_minimum']
 
@@ -250,7 +245,9 @@ def checking_temperature(plant_dictionary, plant_name):
             else:
                 temp_time_tracker[str(plant_name)]['stage'] = 1
 
-            return 2 # Return a state value that is going to be added to array sent back to ESP through Circus of Things.
+            plant_dictionary[str(plant_name)]['temperature_state'] = 2
+
+            return plant_dictionary # Return a state value that is going to be added to array sent back to ESP through Circus of Things.
 
         # If sensor values are lower than threshold value
         elif temp_value < temp_minimum_threshold:
@@ -271,12 +268,15 @@ def checking_temperature(plant_dictionary, plant_name):
             else:
                 temp_time_tracker[str(plant_name)]['stage'] = 3
 
-            return 1 # Return a state value that is going to be added to array sent back to ESP through Circus of Things.
+            plant_dictionary[str(plant_name)]['temperature_state'] = 1
+
+            return plant_dictionary # Return a state value that is going to be added to array sent back to ESP through Circus of Things.
 
         # Otherwise everythings is okay, and we'll return a state saying so.
         else:
             temp_time_tracker[str(plant_name)]['stage'] = 0
-            return 0
+            plant_dictionary[str(plant_name)]['temperature_state'] = 0
+            return plant_dictionary
         print('return temp state')
 
     # if first if statement was false, and the system is not in control mode, then start control mode and update time when it started.
@@ -290,6 +290,8 @@ def checking_temperature(plant_dictionary, plant_name):
     else:
         print(f"waiting for temp for plant {plant_name}")
 
+    return plant_dictionary
+
 
 #### Relative humidity sensor check ####--------------------------------------------------------------------------------
 """
@@ -301,9 +303,6 @@ humid_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{
                       '5':{'time':time.time(), 'control':False, "stage":0},'6':{'time':time.time(), 'control':False, "stage":0},
                       '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
 
-
-# A list over each plants unique sensor key from CoT file.
-humid_sensor_keys = CoT.humid_value_key_list
 
 def checking_humidity(plant_dictionary, plant_name):
     """
@@ -319,7 +318,7 @@ def checking_humidity(plant_dictionary, plant_name):
 
         # Get following values: The humid value stored in CoT and the threshold value stored in dictionary from user input.
         humid_threshold = plant_dictionary[str(plant_name)]['humidity_requirement']
-        humid_value = humid_sensor_keys[plant_name-1].get()['Value']
+        humid_value = CoT.humid_value_key_list[plant_name-1].get()['Value']
 
         # Reset the control variable, so we can start a new control check for next time.
         humid_time_tracker[str(plant_name)]['control'] = False
@@ -339,7 +338,9 @@ def checking_humidity(plant_dictionary, plant_name):
             elif humid_time_tracker[str(plant_name)]['stage'] == 2:
                 humid_time_tracker[str(plant_name)]['stage'] = 0
                 print('email about dryness')
-            return 1
+
+            plant_dictionary[str(plant_name)]['humidity_state'] = 1
+            return plant_dictionary
 
 
         # The humidity is good enough
@@ -347,7 +348,8 @@ def checking_humidity(plant_dictionary, plant_name):
             print('Its good enough')
             humid_time_tracker[str(plant_name)]['control'] = False
             humid_time_tracker[str(plant_name)]['stage'] = 0
-            return 0
+            plant_dictionary[str(plant_name)]['humidity_state'] = 0
+            return plant_dictionary
 
 
         print('Return humid state')
@@ -362,6 +364,8 @@ def checking_humidity(plant_dictionary, plant_name):
     else:
         print(f"waiting for humid for plant {plant_name}")
 
+    return plant_dictionary
+
 
 #### Ultrasonic sensor/water level check ####---------------------------------------------------------------------------
 """
@@ -372,8 +376,6 @@ watertank_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'
                           '5':{'time':time.time(), 'control':False, "stage":0},'6':{'time':time.time(), 'control':False, "stage":0},
                           '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
 
-# A list over each plants unique sensor key from CoT file.
-ultrasonic_sensor_keys = CoT.ultrasonic_value_key_list
 
 def checking_water_tank_volume(plant_dictionary, plant_name):
     """
@@ -387,7 +389,7 @@ def checking_water_tank_volume(plant_dictionary, plant_name):
     if((current_time - watertank_time_tracker[str(plant_name)]['time'] > 30) and (watertank_time_tracker[str(plant_name)]['control'] == True)) or (current_time - plant_dictionary[str(plant_name)]['last_water'] < 10):
 
         # Get the values from ultrasonic sensor for chosen plant
-        water_tank_volume = ultrasonic_sensor_keys[plant_name-1].get()['Value']
+        water_tank_volume = CoT.ultrasonic_value_key_list[plant_name-1].get()['Value']
 
         # Reset the control mode for this function
         watertank_time_tracker[str(plant_name)]['control'] = False
@@ -396,19 +398,22 @@ def checking_water_tank_volume(plant_dictionary, plant_name):
         # If the water level is between 20 and 10 percent, then return the state representing that
         if (10 < water_tank_volume and water_tank_volume < 20):
             print(f"Warning, water level is at {water_tank_volume}%")
-            return 2
+            plant_dictionary[str(plant_name)]['water_level_state'] = 1
+            return plant_dictionary
 
 
         # If it's less than 10 percent, email owner & return the state.
         elif water_tank_volume < 10:
             print("Email owner about it")
-            return 1
+            plant_dictionary[str(plant_name)]['water_level_state'] = 2
+            return plant_dictionary
 
 
         # Otherwise the tank has enough water for now.
         else:
             print('all fine')
-            return 0
+            plant_dictionary[str(plant_name)]['water_level_state'] = 0
+            return plant_dictionary
 
 
         print('return water tank state')
@@ -422,6 +427,8 @@ def checking_water_tank_volume(plant_dictionary, plant_name):
     # Function is currently in control mode, checking up on how much time has passed.
     else:
         print(f"waiting for watertank for plant {plant_name}")
+
+    return plant_dictionary
 
 #### Pump state & water percentage left in tank (Ultrasonic) ####-------------------------------------------------------
 

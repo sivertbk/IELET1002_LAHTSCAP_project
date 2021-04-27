@@ -1,5 +1,5 @@
 # @Date:   2021-04-21T14:03:41+02:00
-# @Last modified time: 2021-04-27T18:29:47+02:00
+# @Last modified time: 2021-04-27T20:09:54+02:00
 
 
 
@@ -44,7 +44,7 @@ while True:
 
     #### Update sensor values ####--------------------------------------------------------------------------------------
 
-    for plant_name in range(1, 2):
+    for plant_name in range(1, 9):
 
         if plant_dictionary[str(plant_name)]['active_status']: # Only run if plant is active
 
@@ -57,10 +57,9 @@ while True:
 
             plant_dictionary = plant_modules.plant_soil_check(plant_dictionary, plant_name)
 
-
-            plant_modules.checking_temperature(plant_dictionary, plant_name)
-            plant_modules.checking_humidity(plant_dictionary, plant_name)
-            plant_modules.checking_water_tank_volume(plant_dictionary, plant_name)
+            plant_dictionary = plant_modules.checking_temperature(plant_dictionary, plant_name)
+            plant_dictionary = plant_modules.checking_humidity(plant_dictionary, plant_name)
+            plant_dictionary = plant_modules.checking_water_tank_volume(plant_dictionary, plant_name)
 
             #### Put updated states to CoT ####-------------------------------------------------------------------------
 
@@ -89,4 +88,4 @@ while True:
     with open('plant_dictionaries_v2.json', 'w') as json_file:
         json.dump(plant_dictionary, json_file)
 
-    time.sleep(1)
+    #time.sleep(1)
