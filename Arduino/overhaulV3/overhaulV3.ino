@@ -3,6 +3,11 @@
 #include <Adafruit_AHTX0.h>
 #include <CircusESP32Lib.h>
 #include <DFRobot_VEML7700.h>
+#include <SPI.h>            // library for configuration of OLED display
+#include <TFT_eSPI.h>       // Hardware-specific library
+
+TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
+
 
 // Download links til lib brukt:
 //    https://github.com/DFRobot/DFRobot_VEML7700
@@ -16,10 +21,10 @@
 #define Threshold 40 /* Greater the value, more the sensitivity on touchpin*/
 
 // COT Config
-//char ssid[] = "Iprobe"; // Name on SSID pede's phone
-//char psk[] = "Torpedor"; // Password for SSID peder's phone
-char ssid[] = "kameraBad2"; // Name on SSID
-char psk[] = "9D2Remember"; // Password for SSID
+char ssid[] = "ASUS 1ETG HOYRE 2,4"; // Name on SSID pede's phone
+char psk[] = "34353637"; // Password for SSID peder's phone
+//char ssid[] = "kameraBad2"; // Name on SSID
+//char psk[] = "9D2Remember"; // Password for SSID
 char token1[] = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k"; // COT User
 char server[] = "www.circusofthings.com"; // Site communication
 
@@ -72,6 +77,10 @@ RTC_DATA_ATTR float last_temperature_val;
 RTC_DATA_ATTR float last_lux_val;
 RTC_DATA_ATTR float last_distance_val;
 
+RTC_DATA_ATTR char text_color_temp;
+RTC_DATA_ATTR char text_color_soil;
+RTC_DATA_ATTR char text_color_water;
+
 // State variables
 int water_tank_state;
 int humid_state;
@@ -97,6 +106,7 @@ int distance_avg;
 //unsigned long pump_start = 0;
 //unsigned long wait_start = 0;
 //unsigned long wait_duration = 5000;
+unsigned long oled_start;
 
 // Pump Logic Variables
 //bool pump_active = 0;             // Bool variable that determines if the pump is active or not
@@ -128,6 +138,15 @@ void setup(){
   pinMode(pump_pin, OUTPUT);
   pinMode(led_pin, OUTPUT);
   pinMode(input_pin, OUTPUT);
+
+  // OLED initiation
+  tft.init();
+  tft.fillScreen(TFT_BLACK);
+  tft.setCursor(0, 0, 4);  // Set "cursor" at top left corner of display (0,0) and select font 4
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);  // Set the font colour to be white with a black background
+  // We can now plot text on screen using the "print" class
+
+
 
 
   
@@ -218,6 +237,9 @@ void setup(){
       }
     }
   }
+  //################################################# OLED DISPLAY #################################################################
+  // the pinns for the OLED display are defined in the user.setup file in the espi library
+  // ground -> GRN, VCC -> 3V3, SCL -> 18, SDA -> 23, RES -> 4, DC -> 2
   else if(wakeup_reason == ESP_SLEEP_WAKEUP_TOUCHPAD){
     //leser led status og pumpe status
     compiled_states = circusESP32.read(state_array1_key, token1);
@@ -227,7 +249,65 @@ void setup(){
     humid_state = (compiled_states / 10) % 10;
     temp_state = (compiled_states / 100) % 10;
 
+    oled_start = millis();
+    //if statements to determine the color of the displayed values based on how "good" they are
+    if(temp_state = 0){
+      text_color_temp = TFT_GREEN;
+    }
+    else if(temp_state = 1){
+      text_color_temp = TFT_BLUE;
+    }
+    else if(temp_state = 2){
+      text_color_temp = TFT_RED;
+    }
+
+    if(last_soil_val < 25){
+      text_color_soil = TFT_BLUE;
+    }
+    else if(last_soil_val > 25 && last_soil_val < 75){
+      text_color_soil = TFT_GREEN;
+    }
+    else if(last_soil_val > 75){
+      text_color_soil = TFT_RED;
+    }
+
+    if(water_tank_state == 0){
+    text_color_water = TFT_GREEN;
+    }
+    else if (water_tank_state == 1){
+      text_color_water = TFT_BLUE;
+    }
+    else if (water_tank_state == 2){
+      text_color_water = TFT_RED;
+    }
+
+    //Setting the OLED to show the last measured values for 10 seconds after the touch pin is activated
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      tft.print("Temperatur:");  
+      tft.setTextColor(text_color_temp, TFT_BLACK);
+      tft.print(int(last_temperature_val));
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      tft.println("C");
+
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      tft.print("Soilsensor:");  
+      tft.setTextColor(text_color_soil, TFT_BLACK);
+      tft.print(int(last_soil_val));
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      tft.println("%");
+
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      tft.print("Vannmengde:");  
+      tft.setTextColor(text_color_water, TFT_BLACK);
+      tft.print(int(last_distance_val));
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      tft.println("%");
+    while(oled_start + 10000 > millis()){}//displaying the values for 10 seconds
+
+    Serial.println("                                                       Det funker");
+
   }
+  //################################################################################################################################
 
 
 
