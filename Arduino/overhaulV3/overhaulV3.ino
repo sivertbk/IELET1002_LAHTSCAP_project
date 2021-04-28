@@ -63,12 +63,22 @@ RTC_DATA_ATTR float temperature[num_readings];
 RTC_DATA_ATTR float lux[num_readings];
 RTC_DATA_ATTR float distance[num_readings];
 
+RTC_DATA_ATTR float last_soil_val;
+RTC_DATA_ATTR float last_uv_val;
+RTC_DATA_ATTR float last_humidity_val;
+RTC_DATA_ATTR float last_temperature_val;
+RTC_DATA_ATTR float last_lux_val;
+RTC_DATA_ATTR float last_distance_val;
+
 // State variables
 int water_tank_state;
 int humid_state;
 int temp_state;
 int pump_state;
 int led_state;
+
+unsigned int compiled_states;
+unsigned int new_compiled_states;
 
 // Variables for CoT
 int soil_avg;
@@ -131,7 +141,7 @@ void setup(){
 
   //Configure Touchpad as wakeup source
   wakeup_reason = esp_sleep_get_wakeup_cause();
- //defining wakeup reasons
+ //Defining wakeup reasons
   esp_sleep_enable_timer_wakeup(sleep_time*second);
   esp_sleep_enable_touchpad_wakeup();
 
@@ -161,6 +171,14 @@ void setup(){
       lux_avg = find_avg(lux);
       temperature_avg = find_avg(temperature);
       humidity_avg = find_avg(humidity);
+
+      // Remembering the values for OLED
+      last_soil_val = soil_avg;
+      last_uv_val = uv_avg;
+      last_humidity_val = humidity_avg;
+      last_temperature_val = temperature_avg;
+      last_lux_val = lux_avg;
+      last_distance_val = distance_avg;
       
       //#################################
       // SEND VERDIER TIL CoT
@@ -172,7 +190,7 @@ void setup(){
       circusESP32.write(ultrasonic_key1, distance_avg, token1);
       //#################################
       //leser led status og pumpe status
-      unsigned int compiled_states = circusESP32.read(state_array1_key, token1);
+      compiled_states = circusESP32.read(state_array1_key, token1);
       
       // splitting the integer
       water_tank_state = compiled_states % 10;
@@ -183,7 +201,7 @@ void setup(){
 
       if (pump_state != 0){
         pump(pump_state, pump_channel);
-        unsigned int new_compiled_states = compile_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);
+        new_compiled_states = compile_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);
         circusESP32.write(state_array1_key, new_compiled_states, token1);
       }
 
@@ -194,7 +212,7 @@ void setup(){
   }
   else if(wakeup_reason == ESP_SLEEP_WAKEUP_TOUCHPAD){
     //leser led status og pumpe status
-    unsigned int compiled_states = circusESP32.read(state_array1_key, token1);
+    compiled_states = circusESP32.read(state_array1_key, token1);
     
     // splitting the integer
     water_tank_state = compiled_states % 10;
