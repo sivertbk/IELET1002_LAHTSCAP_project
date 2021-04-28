@@ -12,6 +12,7 @@
 #define second 1000000         // converts micro seconds to seconds
 #define sleep_time 10
 #define pump_magnitude 255     // Constant to say how fast the pump should run when it is running (given in 8 bits)
+#define Threshold 40 /* Greater the value, more the sensitivity on touchpin*/
 
 // COT Config
 //char ssid[] = "Iprobe"; // Name on SSID pede's phone
@@ -94,7 +95,10 @@ int distance_avg;
 Adafruit_AHTX0 aht;                             // Defines the function used to retrive temp and humi
 DFRobot_VEML7700 veml;                          // Defines the function used to retrive Lux
 CircusESP32Lib circusESP32(server, ssid, psk);  // Defines the function used to communicate to CoT
-TaskHandle_t Task1;                             // etteller annet RTOS relevant Pål kan det
+//TaskHandle_t Task1;                             // etteller annet RTOS relevant Pål kan det
+
+char wakeup_reason; // variabel for eksternal wakeup
+void callback(){} //callback funksjon for touch interrupt
 
 void setup(){
 
@@ -120,39 +124,75 @@ void setup(){
   ledcSetup(led_channel, frequency, resolution);
   ledcAttachPin(led_pin, led_channel);
 
-// Code for mesurement when awakening for sleep
-// retreaving data
-  soil[boot_counter] = get_soil(soilsensor_pin);
-  uv[boot_counter] = get_uv(uvsensor_pin);
-  distance[boot_counter] = get_waterlevel(trigger_pin,echo_pin);
-  lux[boot_counter] = get_lux();
-  temperature[boot_counter] = get_temp();
-  humidity[boot_counter] = get_humid();
-
-//bootcounter update
-  boot_counter++;
-
-//check if bootcounter == numreadings
-  if (boot_counter == num_readings){
-  //get average
-    boot_counter = 0;
     
-    soil_avg = find_avg(soil);
-    uv_avg = find_avg(uv);
-    distance_avg = find_avg(distance);
-    lux_avg = find_avg(lux);
-    temperature_avg = find_avg(temperature);
-    humidity_avg = find_avg(humidity);
-    
-    //#################################
-    // SEND VERDIER TIL CoT
-    circusESP32.write(soilsensor_key1, soil_avg, token1);
-    circusESP32.write(uvsensor_key1, uv_avg, token1);
-    circusESP32.write(temperature_key1, temperature_avg, token1);
-    circusESP32.write(humidity_key1, humidity_avg, token1);
-    circusESP32.write(luxsensor_key1, lux_avg, token1);
-    circusESP32.write(ultrasonic_key1, distance_avg, token1);
-    //#################################
+  //Setup interrupt on Touch Pad 3 (GPIO15)
+  touchAttachInterrupt(T3, callback, Threshold);
+
+
+  //Configure Touchpad as wakeup source
+  wakeup_reason = esp_sleep_get_wakeup_cause();
+ //defining wakeup reasons
+  esp_sleep_enable_timer_wakeup(sleep_time*second);
+  esp_sleep_enable_touchpad_wakeup();
+
+
+  // Code for mesurement when awakening for sleep
+  if(wakeup_reason == ESP_SLEEP_WAKEUP_TIMER){
+
+    // retreaving data
+    soil[boot_counter] = get_soil(soilsensor_pin);
+    uv[boot_counter] = get_uv(uvsensor_pin);
+    distance[boot_counter] = get_waterlevel(trigger_pin,echo_pin);
+    lux[boot_counter] = get_lux();
+    temperature[boot_counter] = get_temp();
+    humidity[boot_counter] = get_humid();
+
+    //bootcounter update
+    boot_counter++;
+
+    //check if bootcounter == numreadings
+    if (boot_counter == num_readings){
+    //get average
+      boot_counter = 0;
+      
+      soil_avg = find_avg(soil);
+      uv_avg = find_avg(uv);
+      distance_avg = find_avg(distance);
+      lux_avg = find_avg(lux);
+      temperature_avg = find_avg(temperature);
+      humidity_avg = find_avg(humidity);
+      
+      //#################################
+      // SEND VERDIER TIL CoT
+      circusESP32.write(soilsensor_key1, soil_avg, token1);
+      circusESP32.write(uvsensor_key1, uv_avg, token1);
+      circusESP32.write(temperature_key1, temperature_avg, token1);
+      circusESP32.write(humidity_key1, humidity_avg, token1);
+      circusESP32.write(luxsensor_key1, lux_avg, token1);
+      circusESP32.write(ultrasonic_key1, distance_avg, token1);
+      //#################################
+      //leser led status og pumpe status
+      unsigned int compiled_states = circusESP32.read(state_array1_key, token1);
+      
+      // splitting the integer
+      water_tank_state = compiled_states % 10;
+      humid_state = (compiled_states / 10) % 10;
+      temp_state = (compiled_states / 100) % 10;
+      led_state = (compiled_states / 1000) % 10;
+      pump_state = (compiled_states / 10000) % 10;
+
+      if (pump_state != 0){
+        pump(pump_state, pump_channel);
+        unsigned int new_compiled_states = compile_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);
+        circusESP32.write(state_array1_key, new_compiled_states, token1);
+      }
+
+      if (led_state == 1){
+        //skru på led stripe
+      }
+    }
+  }
+  else if(wakeup_reason == ESP_SLEEP_WAKEUP_TOUCHPAD){
     //leser led status og pumpe status
     unsigned int compiled_states = circusESP32.read(state_array1_key, token1);
     
@@ -160,21 +200,13 @@ void setup(){
     water_tank_state = compiled_states % 10;
     humid_state = (compiled_states / 10) % 10;
     temp_state = (compiled_states / 100) % 10;
-    led_state = (compiled_states / 1000) % 10;
-    pump_state = (compiled_states / 10000) % 10;
 
-    if (pump_state != 0){
-      pump(pump_state, pump_channel);
-      unsigned int new_compiled_states = compile_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);
-      circusESP32.write(state_array1_key, new_compiled_states, token1);
-    }
-
-    if (led_state == 1){
-      //skru på led stripe
-    }
   }
+
+
+
+
 //go back to sleep
-  esp_sleep_enable_timer_wakeup(sleep_time*second);
   esp_deep_sleep_start();
 
 
@@ -294,5 +326,9 @@ void pump(int state, int channel){
   ledcWrite(channel, pump_strenght);
   active = 0;
 }
+
+
+ 
+
 
 void loop(){}
