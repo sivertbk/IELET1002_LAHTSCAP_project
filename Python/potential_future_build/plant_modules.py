@@ -14,6 +14,7 @@ from datetime import datetime
 import CoT
 import time
 import json
+import threading
 
 
 
@@ -191,7 +192,27 @@ def plant_soil_check(plant_dictionary, plant_name):
 
 #### Lux sensor check ####----------------------------------------------------------------------------------------------
 
-
+def lux_check(plant_dictionary, plant_name):
+    
+    # Setting up variables
+    
+    now = datetime.datetime.now()
+    lux_value = plant_dictionary[str(plant_name)]['lux_value']
+    lux_threshold = plant_dictionary[str(plant_name)]['light_requirement']
+    
+    
+    # Checks if light value(in lux) is under threshold and in time is between 11:00 and 21:00.
+    # If both conditions are true, light state will be set to 1 and activate the light strip.
+    
+    if (lux_value < lux_threshold) and (10 < now.hour < 21):
+        plant_dictionary[str(plant_name)]['light_state'] = 1
+        return plant_dictionary
+    else:
+        return plant_dictionary
+    threading.Timer(300,lux_check).start() # Waits 5 minutes (300 seconds) to run function again.
+        
+        
+        
 
 #### Temperature sensor check ####--------------------------------------------------------------------------------------
 
