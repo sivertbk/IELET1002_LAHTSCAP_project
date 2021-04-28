@@ -188,7 +188,7 @@ def decode_plant_system_states(plant_name, state = 'default'):
     if state == 'default':
         return system_state_dict
     else:
-        return sensor_values_dict[input]
+        return system_state_dict[state]
 
 
 

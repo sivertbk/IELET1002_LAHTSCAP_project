@@ -1,5 +1,5 @@
 # @Date:   2021-04-24T13:38:04+02:00
-# @Last modified time: 2021-04-27T20:16:28+02:00
+# @Last modified time: 2021-04-27T20:56:07+02:00
 
 
 
@@ -142,12 +142,10 @@ def update_plant_system_states(plant_dictionary, plant_name):
 soil_time_tracker = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0,'7':0,'8':0}
 # Dictionary of booleans for each plant if soil control is in progress or not
 soil_control = {'1':False,'2':False,'3':False,'4':False,'5':False,'6':False,'7':False,'8':False}
-# Dictionary of booleans for each plant if the soil value is over given water requirement
-soil_over_threshold = {'1':True,'2':True,'3':True,'4':True,'5':True,'6':True,'7':True,'8':True}
 # Time of control check for soil in seconds. 30 minutes = 1800 seconds
 plant_soil_check_control_time = 20
 # Interval time between watering a plant in seconds. 12 Hours interval = 43200 seconds
-plant_water_interval = 5
+plant_water_interval = 15
 
 def plant_soil_check(plant_dictionary, plant_name):
     """
@@ -165,27 +163,30 @@ def plant_soil_check(plant_dictionary, plant_name):
     water_interval = plant_water_interval
     control_wait_time = plant_soil_check_control_time
 
-    # Checking if current soil moisture is under requirement and if it is more than 'water_interval' seconds since last water
+    # Checking if current soil moisture is under requirement and if it is more than 'water_interval' seconds since last water.
     if (soil_value < Threshold) and ((current_time - last_water) > water_interval):
-        #soil_over_threshold[str(plant_name)] = False # If statement passes,
+        # if we are in soil_control we go on. if not we, set soil_control to True and start the timer.
         if soil_control[str(plant_name)]:
+            # if the time now subtracted by the time we entered soil_control is bigger than given control_wait_time we go on.
             if (current_time - soil_time_tracker[str(plant_name)]) > control_wait_time:
-                soil_control[str(plant_name)] = False
-                soil_time_tracker[str(plant_name)] = 0
-                plant_dictionary[str(plant_name)]['pump_state'] = 1
+                soil_control[str(plant_name)] = False # soil_control is finished and we set the boolean to False.
+                plant_dictionary[str(plant_name)]['pump_state'] = 1 # soil_control has passed and we set pump_state to 1.
                 print('watering plant',str(plant_name)+'!')
                 return plant_dictionary
+            # we are still waiting for control time to pass. do nothing and return plant_dictionary.
             else:
                 return plant_dictionary
+        # set soil_control to True and start the timer. Next time we enter function it will check if the control_wait_time
+        # has passed and we can water the plant.
         else:
             print('Plant', str(plant_name), 'soil control in progress! If pass, water in', control_wait_time, 'seconds.')
             soil_time_tracker[str(plant_name)] = int(time.time())
             soil_control[str(plant_name)] = True
-
+    # All is good and we are not going to control the soil value. Set it to False.
+    # If we are in soil_control, this will cancel the control.
     else:
         soil_control[str(plant_name)] = False
-        #soil_over_threshold[str(plant_name)] = True
-        return plant_dictionary
+
     return plant_dictionary
 
 
@@ -453,20 +454,26 @@ def checking_water_tank_volume(plant_dictionary, plant_name):
 
 #### Pump state & water percentage left in tank (Ultrasonic) ####-------------------------------------------------------
 
+last_system_states = {'1':100000, '2':200000, '3':300000, '4':400000, '5':500000, '6':600000, '7':700000, '8':800000}
 
 def put_system_states_to_CoT(plant_dictionary, plant_name):
     """
     This function reads the states from plant dictionary before it encodes the states and uploads the system states
-    to CoT.
+    to CoT. Also updates last_water if pump_state == 1 and returns it to plant_dictionary.
     """
 
-    # encode states from plant dictionary
+    # encode states from plant dictionary into integer with 5 digits
     system_states = CoT.encode_plant_system_states(plant_dictionary, plant_name)
-    # put states to CoT
-    CoT.plant_state_array_list[plant_name - 1].put(system_states)
+
+    # if system_states is the same as last_system_states we dont send to CoT.
+    if system_states != last_system_states:
+        CoT.plant_state_array_list[plant_name - 1].put(system_states) # put states to CoT.
+        last_system_states[str(plant_name)] = system_states # update last_system_states to what we sent.
+
     # update last watering if pump_state is not 0
     if plant_dictionary[str(plant_name)]['pump_state'] != 0:
         plant_dictionary[str(plant_name)]['last_water'] = int(time.time())
+
     return plant_dictionary
 
 
