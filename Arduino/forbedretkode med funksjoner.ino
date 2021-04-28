@@ -18,8 +18,8 @@ char temperature_key1[] = "10571";
 char humidity_key1[] = "2615";
 char uvsensor_key1[] = "2882";
 char luxsensor_key1[] = "17733";
-char pump_state_key1[] = "32607";
 char ultrasonic_key1[] = "28799";
+char pump_state_key1[] = "32607";
 
 // Pins
 const int soilsensor_pin = 32;
