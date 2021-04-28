@@ -1,5 +1,5 @@
 # @Date:   2021-04-24T13:38:04+02:00
-# @Last modified time: 2021-04-28T19:14:30+02:00
+# @Last modified time: 2021-04-28T21:37:16+02:00
 
 
 
@@ -14,7 +14,6 @@ from datetime import datetime
 import CoT
 import time
 import json
-import threading
 
 
 
@@ -147,10 +146,10 @@ plant_soil_check_control_time = 20
 # Interval time between watering a plant in seconds. 12 Hours interval = 43200 seconds
 plant_water_interval = 15
 
-def plant_soil_check(plant_dictionary, plant_name):
+def soil_check(plant_dictionary, plant_name):
     """
     Function which takes the plant name as an argument and checks if the plant need water or not.
-    When the plant need water it changes the plants water status to True
+    When the plant need water it changes the plants water status to True(1)
     """
     if 'last_water' not in plant_dictionary[str(plant_name)].keys(): # Adding 'last_water' if not allready in dictionary
         plant_dictionary[str(plant_name)]['last_water'] = []
@@ -165,9 +164,9 @@ def plant_soil_check(plant_dictionary, plant_name):
 
     # Checking if current soil moisture is under requirement and if it is more than 'water_interval' seconds since last water.
     if (soil_value < Threshold) and ((current_time - last_water) > water_interval):
-        # if we are in soil_control we go on. if not we, set soil_control to True and start the timer.
+        # if we are in soil_control we carry on. If not we, set soil_control to True and start the timer.
         if soil_control[str(plant_name)]:
-            # if the time now subtracted by the time we entered soil_control is bigger than given control_wait_time we go on.
+            # if the time now subtracted by the time we entered soil_control is bigger than given control_wait_time we carry on.
             if (current_time - soil_time_tracker[str(plant_name)]) > control_wait_time:
                 soil_control[str(plant_name)] = False # soil_control is finished and we set the boolean to False.
                 plant_dictionary[str(plant_name)]['pump_state'] = 1 # soil_control has passed and we set pump_state to 1.
@@ -193,28 +192,52 @@ def plant_soil_check(plant_dictionary, plant_name):
 
 #### Lux sensor check ####----------------------------------------------------------------------------------------------
 
+# Lux check variables:
+# Dictionary of timestampes for when lux control started for each plant
+lux_time_tracker = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0,'7':0,'8':0}
+# Dictionary of booleans for each plant if lux control is in progress or not
+lux_control = {'1':False,'2':False,'3':False,'4':False,'5':False,'6':False,'7':False,'8':False}
+# Time for control check for lux in seconds. 5 minutes = 300 seconds
+lux_check_control_time = 15
+
 def lux_check(plant_dictionary, plant_name):
-
+    """
+    Function which takes the plant name as an argument and checks if the plant need more light or not.
+    When the plant need light it changes the plants light status to True(1)
+    """
     # Setting up variables
-    now = datetime.datetime.now()
+    now = datetime.now() # current time in datetime
+    current_time = int(time.time()) # current time in epoch
     lux_value = plant_dictionary[str(plant_name)]['lux_value']
-    lux_threshold = plant_dictionary[str(plant_name)]['light_requirement']
+    lux_threshold = plant_dictionary[str(plant_name)]['lux_requirement']
+    control_wait_time = lux_check_control_time
 
-
-    threading.Timer(300,lux_check).start() # Runs function every 5 minutes.
-
-    # Checks if light value(in lux) is under threshold and in time is between 11:00 and 21:00.
-    # If both conditions are true, light state will be set to 1 and activate the light strip.
+    # Checks if light value(in lux) is under threshold and time is between 11:00 and 21:00.
     if (lux_value < lux_threshold) and (10 < now.hour < 21):
-        plant_dictionary[str(plant_name)]['light_state'] = 1
-        print('Light state is set to 1!!!!!!')
-        return plant_dictionary
+        # if we are in lux_control we carry on. If not we, set lux_control to True and start the timer.
+        if lux_control[str(plant_name)]:
+            # if the time now subtracted by the time we entered lux_control is bigger than given control_wait_time we carry on.
+            if (current_time - lux_time_tracker[str(plant_name)]) > control_wait_time:
+                plant_dictionary[str(plant_name)]['light_state'] = 1
+                lux_control[str(plant_name)] = False
+                #print('Light state is set to 1!!!!!!')
+                return plant_dictionary
+            # we are still waiting for control time to pass. do nothing and return plant_dictionary.
+            else:
+                return plant_dictionary
+        # set lux_control to True and start the timer. Next time we enter function it will check if the control_wait_time
+        # has passed and we can turn on the light.
+        else:
+            lux_control[str(plant_name)] = True
+            lux_time_tracker[str(plant_name)] = int(time.time())
+            return plant_dictionary
+
+    # All is good and we are not going to control the light value and we set light_state to False(0).
+    # If we are in lux_control, this will cancel the control.
     else:
-        print('Just passin through...')
+        plant_dictionary[str(plant_name)]['light_state'] = 0
+        lux_control[str(plant_name)] = False
         return plant_dictionary
-
-
-
 
 
 #### Temperature sensor check ####--------------------------------------------------------------------------------------
