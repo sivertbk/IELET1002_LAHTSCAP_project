@@ -1,10 +1,12 @@
-//#include <Arduino.h>     // kan fjærnes nå Arduino IDE brukes
-
 
 // Library
 #include <Adafruit_AHTX0.h>
 #include <CircusESP32Lib.h>
 #include <DFRobot_VEML7700.h>
+
+// Download links til lib brukt:
+//    https://github.com/DFRobot/DFRobot_VEML7700
+//    https://github.com/adafruit/Adafruit_AHTX0
 
 #define num_readings 5
 #define second 1000000         // converts micro seconds to seconds
@@ -24,6 +26,13 @@ const int plant = 1;
 
 // COT Keys
 char state_array1_key[] = "23560";
+
+char soilsensor_key1[] = "4991";
+char temperature_key1[] = "10571";
+char humidity_key1[] = "2615";
+char uvsensor_key1[] = "2882";
+char luxsensor_key1[] = "17733";
+char ultrasonic_key1[] = "28799";
 
 // Pins
 //dette fungerer men har hørt at CoT tuller med ADC2 og random nerd tutorial sier at GPIO 35, 34, 39 og 36 er input only
@@ -137,6 +146,12 @@ void setup(){
     
     //#################################
     // SEND VERDIER TIL CoT
+    circusESP32.write(soilsensor_key1, soil_avg, token1);
+    circusESP32.write(uvsensor_key1, uv_avg, token1);
+    circusESP32.write(temperature_key1, temperature_avg, token1);
+    circusESP32.write(humidity_key1, humidity_avg, token1);
+    circusESP32.write(luxsensor_key1, lux_avg, token1);
+    circusESP32.write(ultrasonic_key1, distance_avg, token1);
     //#################################
     //leser led status og pumpe status
     unsigned int compiled_states = circusESP32.read(state_array1_key, token1);
