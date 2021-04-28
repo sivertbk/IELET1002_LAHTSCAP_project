@@ -12,6 +12,7 @@
 #define second 1000000         // converts micro seconds to seconds
 #define sleep_time 10
 #define pump_magnitude 255     // Constant to say how fast the pump should run when it is running (given in 8 bits)
+#define led_brightness 150
 #define Threshold 40 /* Greater the value, more the sensitivity on touchpin*/
 
 // COT Config
@@ -43,6 +44,7 @@ const int echo_pin = 25;
 const int trigger_pin = 26;
 const int pump_pin = 17;
 const int led_pin = 14;
+const int input_pin = 5;
 
 // PWM Config
 const int pump_channel = 5;
@@ -125,6 +127,9 @@ void setup(){
   pinMode(trigger_pin, OUTPUT);
   pinMode(pump_pin, OUTPUT);
   pinMode(led_pin, OUTPUT);
+  pinMode(input_pin, OUTPUT);
+
+
   
 
   //ledC Config
@@ -200,13 +205,16 @@ void setup(){
       pump_state = (compiled_states / 10000) % 10;
 
       if (pump_state != 0){
-        pump(pump_state, pump_channel);
+        pump(pump_state, pump_channel, input_pin);
         new_compiled_states = compile_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);
         circusESP32.write(state_array1_key, new_compiled_states, token1);
       }
 
       if (led_state == 1){
         //skru på led stripe
+      }
+      if (pump_state == 0 && led_state == 0){
+        digitalWrite(input_pin, 0);
       }
     }
   }
@@ -308,7 +316,7 @@ float get_humid(){
   return value;
 }
 
-void pump(int state, int channel){
+void pump(int state, int channel, int input){
   unsigned long duration;
   switch (state){
       case 1:
@@ -329,23 +337,33 @@ void pump(int state, int channel){
 
       default:
         duration = 0;
-        int strenght = 0;
         break;
   }
   //Serial.println("                                  HEI HAA");
   state = 0;
-  bool active = 1;
-  int pump_strenght = pump_magnitude;
+  int strenght = pump_magnitude;
+  digitalWrite(input,1);
   unsigned long start = millis();
-  while (active == 1 && (start + duration) > millis()) {
-    ledcWrite(channel, pump_strenght);
+  while ((start + duration) > millis()) {
+    ledcWrite(channel, strenght);
   }
-  pump_strenght = 0;
-  ledcWrite(channel, pump_strenght);
-  active = 0;
+  strenght = 0;
+  ledcWrite(channel, strenght);
 }
 
-
+void led(int state, int channel, int pin){
+  if (state == 1){
+    digitalWrite(pin, 1);
+    for (int i; i < led_brightness; i++){
+      ledcWrite(channel, i);
+    }
+    ledcWrite(channel, led_brightness);
+  }
+  else{
+    ledcWrite(channel, 0);
+  }
+  
+}
  
 
 
