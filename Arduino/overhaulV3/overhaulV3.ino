@@ -12,19 +12,21 @@ TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 // Download links til lib brukt:
 //    https://github.com/DFRobot/DFRobot_VEML7700
 //    https://github.com/adafruit/Adafruit_AHTX0
+//    https://circusofthings.com
+//    lib mappe i giten
 
-#define num_readings 5
+#define num_readings 6
+#define sleep_time 7
 #define second 1000000         // converts micro seconds to seconds
-#define sleep_time 10
 #define pump_magnitude 255     // Constant to say how fast the pump should run when it is running (given in 8 bits)
 #define led_brightness 150
 #define Threshold 40 /* Greater the value, more the sensitivity on touchpin*/
 
 // COT Config
-char ssid[] = "ASUS 1ETG HOYRE 2,4"; // Name on SSID pede's phone
-char psk[] = "34353637"; // Password for SSID peder's phone
-//char ssid[] = "kameraBad2"; // Name on SSID
-//char psk[] = "9D2Remember"; // Password for SSID
+//char ssid[] = "ASUS 1ETG HOYRE 2,4"; // Name on SSID sivert's phone
+//char psk[] = "34353637"; // Password for SSID siverts's phone
+char ssid[] = "kameraBad2"; // Name on SSID
+char psk[] = "9D2Remember"; // Password for SSID
 char token1[] = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k"; // COT User
 char server[] = "www.circusofthings.com"; // Site communication
 
@@ -49,7 +51,6 @@ const int echo_pin = 25;
 const int trigger_pin = 26;
 const int pump_pin = 17;
 const int led_pin = 14;
-const int input_pin = 5;
 
 // PWM Config
 const int pump_channel = 5;
@@ -137,7 +138,6 @@ void setup(){
   pinMode(trigger_pin, OUTPUT);
   pinMode(pump_pin, OUTPUT);
   pinMode(led_pin, OUTPUT);
-  pinMode(input_pin, OUTPUT);
 
   // OLED initiation
   tft.init();
@@ -146,11 +146,6 @@ void setup(){
   tft.setTextColor(TFT_WHITE, TFT_BLACK);  // Set the font colour to be white with a black background
   // We can now plot text on screen using the "print" class
 
-
-
-
-  
-
   //ledC Config
   ledcSetup(pump_channel, frequency, resolution);
   ledcAttachPin(pump_pin, pump_channel);
@@ -158,21 +153,19 @@ void setup(){
   ledcSetup(led_channel, frequency, resolution);
   ledcAttachPin(led_pin, led_channel);
 
-    
   //Setup interrupt on Touch Pad 3 (GPIO15)
   touchAttachInterrupt(T3, callback, Threshold);
 
-
   //Configure Touchpad as wakeup source
   wakeup_reason = esp_sleep_get_wakeup_cause();
- //Defining wakeup reasons
+  //Defining wakeup reasons
   esp_sleep_enable_timer_wakeup(sleep_time*second);
   esp_sleep_enable_touchpad_wakeup();
 
-
   // Code for mesurement when awakening for sleep
   if(wakeup_reason == ESP_SLEEP_WAKEUP_TIMER){
-
+    
+    Serial.println("Henter verdier: " + String(boot_counter) + ". av: " + String(num_readings) + ". ganger");
     // retreaving data
     soil[boot_counter] = get_soil(soilsensor_pin);
     uv[boot_counter] = get_uv(uvsensor_pin);
@@ -186,8 +179,9 @@ void setup(){
 
     //check if bootcounter == numreadings
     if (boot_counter == num_readings){
-    //get average
-      boot_counter = 0;
+      Serial.println("Finner gjennomsnitt");
+      //get average
+      //boot_counter = 0;
       
       soil_avg = find_avg(soil);
       uv_avg = find_avg(uv);
@@ -195,6 +189,14 @@ void setup(){
       lux_avg = find_avg(lux);
       temperature_avg = find_avg(temperature);
       humidity_avg = find_avg(humidity);
+
+      //test
+      soil_avg = 15;
+      uv_avg = 15;
+      distance_avg = 15;
+      lux_avg = 15;
+      temperature_avg = 15;
+      humidity_avg = 15;
 
       // Remembering the values for OLED
       last_soil_val = soil_avg;
@@ -204,40 +206,43 @@ void setup(){
       last_lux_val = lux_avg;
       last_distance_val = distance_avg;
       
-      //#################################
-      // SEND VERDIER TIL CoT
+      // ###### SEND VERDIER TIL CoT ######
       circusESP32.write(soilsensor_key1, soil_avg, token1);
       circusESP32.write(uvsensor_key1, uv_avg, token1);
       circusESP32.write(temperature_key1, temperature_avg, token1);
       circusESP32.write(humidity_key1, humidity_avg, token1);
       circusESP32.write(luxsensor_key1, lux_avg, token1);
       circusESP32.write(ultrasonic_key1, distance_avg, token1);
-      //#################################
-      //leser led status og pumpe status
-      compiled_states = circusESP32.read(state_array1_key, token1);
-      
-      // splitting the integer
-      water_tank_state = compiled_states % 10;
-      humid_state = (compiled_states / 10) % 10;
-      temp_state = (compiled_states / 100) % 10;
-      led_state = (compiled_states / 1000) % 10;
-      pump_state = (compiled_states / 10000) % 10;
+    } 
+  }
+  if (wakeup_reason == ESP_SLEEP_WAKEUP_TOUCHPAD || boot_counter == num_readings){
+    boot_counter = 0;     //resetter bootcounter for ny datasamlingsyklus
+    Serial.print("                    skjekker input array for endringer");
+    //leser led status og pumpe status
+    compiled_states = circusESP32.read(state_array1_key, token1);
+    
+    // splitting the integer
+    water_tank_state = compiled_states % 10;
+    humid_state = (compiled_states / 10) % 10;
+    temp_state = (compiled_states / 100) % 10;
+    led_state = (compiled_states / 1000) % 10;
+    pump_state = (compiled_states / 10000) % 10;
 
-      if (pump_state != 0){
-        pump(pump_state, pump_channel, input_pin);
-        new_compiled_states = compile_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);
-        circusESP32.write(state_array1_key, new_compiled_states, token1);
-      }
-
-      if (led_state == 1){
-        //skru på led stripe
-      }
-      if (pump_state == 0 && led_state == 0){
-        digitalWrite(input_pin, 0);
-      }
+    Serial.println(String(compiled_states) + "Led state: " +String(led_state) + "Pump state: " +String(pump_state));
+    if (pump_state != 0){
+      pump(pump_state, pump_channel);
+      pump_state = 0;
+      new_compiled_states = compile_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);
+      circusESP32.write(state_array1_key, new_compiled_states, token1);
+    }  
+    if (led_state != 0){
+      //skru på led stripe
+      led_activate(led_state, led_channel);
     }
   }
-  //################################################# OLED DISPLAY #################################################################
+
+
+  // ###### OLED DISPLAY ######
   // the pinns for the OLED display are defined in the user.setup file in the espi library
   // ground -> GRN, VCC -> 3V3, SCL -> 18, SDA -> 23, RES -> 4, DC -> 2
   else if(wakeup_reason == ESP_SLEEP_WAKEUP_TOUCHPAD){
@@ -305,17 +310,10 @@ void setup(){
     while(oled_start + 10000 > millis()){}//displaying the values for 10 seconds
 
     Serial.println("                                                       Det funker");
-
   }
-  //################################################################################################################################
-
-
-
 
 //go back to sleep
   esp_deep_sleep_start();
-
-
 }
 
 
@@ -396,7 +394,7 @@ float get_humid(){
   return value;
 }
 
-void pump(int state, int channel, int input){
+void pump(int state, int channel){
   unsigned long duration;
   switch (state){
       case 1:
@@ -421,30 +419,26 @@ void pump(int state, int channel, int input){
   }
   //Serial.println("                                  HEI HAA");
   state = 0;
-  int strenght = pump_magnitude;
-  digitalWrite(input,1);
   unsigned long start = millis();
   while ((start + duration) > millis()) {
-    ledcWrite(channel, strenght);
+    ledcWrite(channel, pump_magnitude);
   }
-  strenght = 0;
-  ledcWrite(channel, strenght);
+  ledcWrite(channel, 0);
 }
 
-void led(int state, int channel, int pin){
+void led_activate(int state, int channel){
+  Serial.println("led funksjon aktivert");
   if (state == 1){
-    digitalWrite(pin, 1);
-    for (int i; i < led_brightness; i++){
+    for (int i = 50; i < led_brightness; i++){
       ledcWrite(channel, i);
+      delay(10);
     }
     ledcWrite(channel, led_brightness);
   }
   else{
     ledcWrite(channel, 0);
   }
-  
+  Serial.println("led_state: " + String(state));
 }
  
-
-
 void loop(){}
