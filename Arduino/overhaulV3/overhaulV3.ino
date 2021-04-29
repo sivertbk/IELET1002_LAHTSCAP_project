@@ -290,6 +290,9 @@ void setup(){
 
     //Setting the OLED to show the last measured values for 10 seconds after the touch pin is activated
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      tft.println("Sensorverdiene til planta");  
+      
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
       tft.print("Temperatur:");  
       tft.setTextColor(text_color_temp, TFT_BLACK);
       tft.print(int(last_temperature_val));
@@ -309,9 +312,23 @@ void setup(){
       tft.print(int(last_distance_val));
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
       tft.println("%");
-    while(oled_start + 10000 > millis()){}//displaying the values for 10 seconds
 
-    Serial.println("                                                       Det funker");
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      tft.print("Lys:");  
+      tft.setTextColor(TFT_BLUE, TFT_BLACK);
+      tft.print(int(last_lux_val));
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      tft.println("Lux");
+
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      tft.print("Fuktighet:");  
+      tft.setTextColor(TFT_BLUE, TFT_BLACK);
+      tft.print(int(last_humidity_val));
+      tft.setTextColor(TFT_WHITE, TFT_BLACK);
+      tft.println("%rH");
+
+      
+    while(oled_start + 10000 > millis()){}//displaying the values for 10 seconds
   }
 
 //go back to sleep
