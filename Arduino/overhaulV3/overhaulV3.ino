@@ -23,10 +23,10 @@ TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 #define Threshold 40 /* Greater the value, more the sensitivity on touchpin*/
 
 // COT Config
-//char ssid[] = "ASUS 1ETG HOYRE 2,4"; // Name on SSID sivert's phone
-//char psk[] = "34353637"; // Password for SSID siverts's phone
-char ssid[] = "kameraBad2"; // Name on SSID
-char psk[] = "9D2Remember"; // Password for SSID
+char ssid[] = "Iprobe"; // Name on SSID sivert's phone
+char psk[] = "Torpedor"; // Password for SSID siverts's phone
+//char ssid[] = "kameraBad2"; // Name on SSID
+//char psk[] = "9D2Remember"; // Password for SSID
 char token1[] = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k"; // COT User
 char server[] = "www.circusofthings.com"; // Site communication
 
@@ -191,12 +191,14 @@ void setup(){
       humidity_avg = find_avg(humidity);
 
       //test
+      /*
       soil_avg = 15;
       uv_avg = 15;
       distance_avg = 15;
       lux_avg = 15;
       temperature_avg = 15;
       humidity_avg = 15;
+      */
 
       // Remembering the values for OLED
       last_soil_val = soil_avg;
@@ -245,7 +247,7 @@ void setup(){
   // ###### OLED DISPLAY ######
   // the pinns for the OLED display are defined in the user.setup file in the espi library
   // ground -> GRN, VCC -> 3V3, SCL -> 18, SDA -> 23, RES -> 4, DC -> 2
-  else if(wakeup_reason == ESP_SLEEP_WAKEUP_TOUCHPAD){
+  if(wakeup_reason == ESP_SLEEP_WAKEUP_TOUCHPAD){
     //leser led status og pumpe status
     compiled_states = circusESP32.read(state_array1_key, token1);
     
@@ -341,14 +343,14 @@ float find_avg(float array[]){
 float get_soil(int pin){
   int value = analogRead(pin);
   float percent = map(value,0,4095,0,100);// finner den prosentvise verdien for jordfuktighet
-  //Serial.println(); Serial.print("                Soil Sensor in %: "); Serial.println(value);
+  Serial.println(); Serial.print("                Soil Sensor in %: "); Serial.println(value);
   return percent;
 }
 
 float get_uv(int pin){
   int value = analogRead(pin);                    // denne viser for detmeste 0 men om den får direkte sollys gir den verdier (16.04 kl 14ish ga den 400 ved direkte sollys)
   float percent = map(value,0,611,0,100);     // usikker på nevner verdien, kan være høyere // hyeste målt verdi 1300 20.04 611
-  //Serial.print("                UV in %: "); Serial.println(value);
+  Serial.print("                UV in %: "); Serial.println(value);
   return percent;
 }
 
@@ -362,8 +364,10 @@ float get_waterlevel(int trig_pin, int echo_pin){    //Ultrasonisk sensor
   digitalWrite(trig_pin, LOW);
   duration = pulseIn(echo_pin, HIGH);
   float distance = duration * 0.034 / 2;
-  //Serial.print("                Distance: "); Serial.print(distance); Serial.println(" cm");
-  float distance_percent = map(distance,7,22,0,100);
+  Serial.print("                Distance: "); Serial.print(distance); Serial.println(" cm");
+  //float distance_percent = map(distance,7,22,0,100);
+  float distance_percent = map(distance,0,8,0,100);
+  distance_percent = 100 - distance_percent;
 
   return distance_percent;
 }
@@ -441,4 +445,6 @@ void led_activate(int state, int channel){
   Serial.println("led_state: " + String(state));
 }
  
+
+
 void loop(){}
