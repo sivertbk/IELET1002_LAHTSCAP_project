@@ -23,10 +23,10 @@ TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 #define Threshold 40 /* Greater the value, more the sensitivity on touchpin*/
 
 // COT Config
-char ssid[] = "Iprobe"; // Name on SSID sivert's phone
-char psk[] = "Torpedor"; // Password for SSID siverts's phone
-//char ssid[] = "kameraBad2"; // Name on SSID
-//char psk[] = "9D2Remember"; // Password for SSID
+//char ssid[] = "Iprobe"; // Name on SSID sivert's phone
+//char psk[] = "Torpedor"; // Password for SSID siverts's phone
+char ssid[] = "kameraBad2"; // Name on SSID
+char psk[] = "9D2Remember"; // Password for SSID
 char token1[] = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k"; // COT User
 char server[] = "www.circusofthings.com"; // Site communication
 
@@ -88,6 +88,7 @@ int humid_state;
 int temp_state;
 int pump_state;
 int led_state;
+RTC_DATA_ATTR bool active_status = 0;
 
 unsigned int compiled_states;
 unsigned int new_compiled_states;
@@ -164,8 +165,12 @@ void setup(){
 
   // Code for mesurement when awakening for sleep
   if(wakeup_reason == ESP_SLEEP_WAKEUP_TIMER){
+    if (active_status == 1){
+    ledcWrite(led_channel, led_brightness);
+    }
+    //else if (active_status == 0){}
     
-    Serial.println("Henter verdier: " + String(boot_counter) + ". av: " + String(num_readings) + ". ganger");
+    Serial.println("Henter verdier: " + String(boot_counter + 1) + ". av: " + String(num_readings) + ". ganger");
     // retreaving data
     soil[boot_counter] = get_soil(soilsensor_pin);
     uv[boot_counter] = get_uv(uvsensor_pin);
@@ -237,12 +242,14 @@ void setup(){
       new_compiled_states = compile_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);
       circusESP32.write(state_array1_key, new_compiled_states, token1);
     }  
-    if (led_state != 0){
-      //skru på led stripe
+    if (led_state == 1){
+      active_status = 1;
       led_activate(led_state, led_channel);
     }
+    else if (led_state != 1){
+      active_status = 0;
+    }
   }
-
 
   // ###### OLED DISPLAY ######
   // the pinns for the OLED display are defined in the user.setup file in the espi library
@@ -290,42 +297,42 @@ void setup(){
 
     //Setting the OLED to show the last measured values for 10 seconds after the touch pin is activated
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.println("Sensorverdiene til planta");  
+      tft.println("Verdier");  
       
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.print("Temperatur:");  
+      tft.print("Temperatur: ");  
       tft.setTextColor(text_color_temp, TFT_BLACK);
       tft.print(int(last_temperature_val));
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.println("C");
+      tft.println(" C");
 
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.print("Soilsensor:");  
+      tft.print("Soilsensor: ");  
       tft.setTextColor(text_color_soil, TFT_BLACK);
       tft.print(int(last_soil_val));
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.println("%");
+      tft.println(" %");
 
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.print("Vannmengde:");  
+      tft.print("Vannmengde: ");  
       tft.setTextColor(text_color_water, TFT_BLACK);
       tft.print(int(last_distance_val));
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.println("%");
+      tft.println(" %");
 
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.print("Lys:");  
+      tft.print("Lys: ");  
       tft.setTextColor(TFT_BLUE, TFT_BLACK);
       tft.print(int(last_lux_val));
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.println("Lux");
+      tft.println(" Lux");
 
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.print("Fuktighet:");  
+      tft.print("Fuktighet: ");  
       tft.setTextColor(TFT_BLUE, TFT_BLACK);
       tft.print(int(last_humidity_val));
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
-      tft.println("%rH");
+      tft.println(" %rH");
 
       
     while(oled_start + 10000 > millis()){}//displaying the values for 10 seconds
@@ -382,8 +389,8 @@ float get_waterlevel(int trig_pin, int echo_pin){    //Ultrasonisk sensor
   duration = pulseIn(echo_pin, HIGH);
   float distance = duration * 0.034 / 2;
   Serial.print("                Distance: "); Serial.print(distance); Serial.println(" cm");
-  //float distance_percent = map(distance,7,22,0,100);
-  float distance_percent = map(distance,0,8,0,100);
+  //float distance_percent = map(distance,7,22,0,100);      //10L bøtte
+  float distance_percent = map(distance,0,8,0,100);         //godteri boks
   distance_percent = 100 - distance_percent;
 
   return distance_percent;
@@ -392,7 +399,7 @@ float get_waterlevel(int trig_pin, int echo_pin){    //Ultrasonisk sensor
 float get_lux(){
   float value;
  
-  veml.getALSLux(value);
+  veml.getAutoALSLux(value);
   Serial.print("                Lux:"); Serial.print(value); Serial.println(" lx");
   return value;
   // har fått lux = 274,000lx (ish) med lys av mobil
@@ -449,16 +456,11 @@ void pump(int state, int channel){
 
 void led_activate(int state, int channel){
   Serial.println("led funksjon aktivert");
-  if (state == 1){
-    for (int i = 50; i < led_brightness; i++){
-      ledcWrite(channel, i);
-      delay(10);
-    }
-    ledcWrite(channel, led_brightness);
+  for (int i = 50; i < led_brightness; i++){
+    ledcWrite(channel, i);
+    delay(10);
   }
-  else{
-    ledcWrite(channel, 0);
-  }
+  ledcWrite(channel, led_brightness);
   Serial.println("led_state: " + String(state));
 }
  
