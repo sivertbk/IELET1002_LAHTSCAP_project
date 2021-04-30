@@ -22,7 +22,9 @@ import json
 def new_default_dictionary():
     """
     A default plant dictionary used for new plant configurations.
-    Everytime this is run, the dictionary will get updated values for user controlled variables.
+    Everytime this is run, it'll return a default plant configuration. 
+    This function is used whenever a new plant is created and isn't already stored in dictionary with all
+    plant's configuration. 
     """
     default = {'plant_number':CoT.plant_number_key2.get()['Value'],
                'active_status':CoT.active_status_key2.get()['Value'],
@@ -39,18 +41,24 @@ def new_default_dictionary():
 def plant_setup():
     '''
     Used for the first time to get the dictionaries stored in json_file.
-    Afterwards, it's used for whenever the user wants to store a new configuration.
-    (And also to see what's already stored)
+    Afterwards, it's used to get the values for plants that user has chosen
+    and update user configuration panel in Circus of Things. 
+    (It will also create and store a new configuration into the dictionary if
+     there isn't stored any configuration in the dictionary).
     '''
 
+    # From json file, store the dictionary to a variable. 
     with open('plant_dictionaries_v2.json') as json_file:
         dictionaries = json.load(json_file)
 
+    # Get the plant number that user has chosen in Circus of Things. 
     plant_number = str(CoT.plant_number_key2.get()['Value'])
 
+    # If the plant doesn't exist in dictionary, then create a new key attached with default configuration. 
     if plant_number not in dictionaries:
         dictionaries[plant_number] = new_default_dictionary()
 
+    # Otherwise, update the user configuration panel with the values that the user want to take a look at. 
     else:
         CoT.plant_number_key2.put(dictionaries[plant_number]['plant_number'])
         CoT.active_status_key2.put(dictionaries[plant_number]['active_status'])
@@ -60,12 +68,14 @@ def plant_setup():
         CoT.temperature_minimum_key2.put(dictionaries[plant_number]['temperature_minimum'])
         CoT.humidity_requirement_key2.put(dictionaries[plant_number]['humidity_requirement'])
 
+    # Then save the dictionary to the json file afterwards
     with open('plant_dictionaries_v2.json', 'w') as json_file:
         json.dump(dictionaries, json_file)
 
+    # Reset the signal new_plant_configuration back to zero, to tell the user that it's finished. 
     CoT.new_plant_configuration_key2.put(0)
 
-    return dictionaries
+    return dictionaries # Return the dictionary with the plants configuration. 
 
 
 # plant_number is string, plant_configuration is a single dictionary.
@@ -73,11 +83,12 @@ def plant_configuration(plant_number,plant_configuration):
     """
     This function is used for whenever the user wants to change some of the configuration to an already exisiting plant
     """
-    # Get our stored dictionary of every plant configuration user has made.
+    
+    # From the json file, get our stored dictionary of every plant configuration user has made .
     with open('plant_dictionaries_v2.json') as json_file:
         dictionaries = json.load(json_file)
 
-    # Update all values to every key that is based on user input.
+    # Update the user configuration for the plant that user has chosen to adjust from Circus of Things. 
     plant_configuration['soil_requirement'] = CoT.soil_requirement_key2.get()['Value']
     plant_configuration['lux_requirement'] = CoT.light_requirement_key2.get()['Value']
     plant_configuration['temperature_maximum'] = CoT.temperature_maximum_key2.get()['Value']
@@ -85,12 +96,12 @@ def plant_configuration(plant_number,plant_configuration):
     plant_configuration['humidity_requirement'] = CoT.humidity_requirement_key2.get()['Value']
     plant_configuration['active_status'] = CoT.active_status_key2.get()['Value']
 
-    # Save the updated dictionary to json file.
+    # Save the new configuration for the chosen plant, and save the whole dictionary to the json file.
     with open('plant_dictionaries_v2.json','w') as json_file:
         dictionaries[plant_number] = plant_configuration
         json.dump(dictionaries, json_file)
 
-    # Reset save_configuration
+    # Reset save_configuration to tell the user that the configuration has been saved. 
     CoT.save_configuration_key2.put(0)
 
 
