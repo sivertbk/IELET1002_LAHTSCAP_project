@@ -261,7 +261,7 @@ temp_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{'
                      '5':{'time':time.time(), 'control':False, "stage":0},'6':{'time':time.time(), 'control':False, "stage":0},
                      '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
 
-
+temp_control_time = 10 # seconds
 def checking_temperature(plant_dictionary, plant_name):
     """
 
@@ -272,9 +272,8 @@ def checking_temperature(plant_dictionary, plant_name):
     current_time = time.time()
 
 
-    # If the time has passed more than chosen time AND we're in control mode (means we've run it once before) or this is the begininng of the stage, we would like to compare sensor values with threshold values
-    ## Delete this row comment ## : As long as sensors always fine, this part will run always. Maybe need a control variable to make sure it doesn't run too often if everythings fine.
-    if((current_time - temp_time_tracker[str(plant_name)]['time'] > 10) and (temp_time_tracker[str(plant_name)]['control'] == True)) or (temp_time_tracker[str(plant_name)]['stage'] == 0):
+    # If the time has passed more than chosen time AND we're in control mode (means we've run it once before).   
+    if((current_time - temp_time_tracker[str(plant_name)]['time'] > temp_control_time) and (temp_time_tracker[str(plant_name)]['control'] == True)): 
 
         # Make sure we're reseting control variable, so timer will run again.
         temp_time_tracker[str(plant_name)]['control'] = False
@@ -361,7 +360,7 @@ humid_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{
                       '5':{'time':time.time(), 'control':False, "stage":0},'6':{'time':time.time(), 'control':False, "stage":0},
                       '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
 
-
+humid_control_time = 20 #seconds
 def checking_humidity(plant_dictionary, plant_name):
     """
     Compare sensor values with threshold value, and returns back what state a chosen plant is in.
@@ -370,9 +369,8 @@ def checking_humidity(plant_dictionary, plant_name):
     # Created and stored  to a variable, whenever function is run
     current_time = time.time()
 
-    # If the time has passed more than chosen time AND we're in control mode (means we've run it once before) or this is the begininng of the stage, we would like to compare sensor values with threshold values
-    ## Delete this row comment ## : As long as sensors always fine, this part will run always. Maybe need a control variable to make sure it doesn't run too often if everythings fine.
-    if((current_time - humid_time_tracker[str(plant_name)]['time'] > 20) and (humid_time_tracker[str(plant_name)]['control'] == True)) or (humid_time_tracker[str(plant_name)]['stage'] == 0):
+    # If the time has passed more than chosen time AND we're in control mode (means we've run it once before).
+    if((current_time - humid_time_tracker[str(plant_name)]['time'] > humid_control_time) and (humid_time_tracker[str(plant_name)]['control'] == True)): 
 
         # Get following values: The humid value stored in CoT and the threshold value stored in dictionary from user input.
         humid_threshold = plant_dictionary[str(plant_name)]['humidity_requirement']
@@ -434,6 +432,7 @@ watertank_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'
                           '5':{'time':time.time(), 'control':False, "stage":0},'6':{'time':time.time(), 'control':False, "stage":0},
                           '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
 
+watertank_control_time = 30 #seconds
 
 def checking_water_tank_volume(plant_dictionary, plant_name):
     """
@@ -444,7 +443,7 @@ def checking_water_tank_volume(plant_dictionary, plant_name):
     current_time = time.time()
 
     # If there has passed an amount of time since last checking the water OR if the pump has recently pumped water, then control how much water is left.
-    if((current_time - watertank_time_tracker[str(plant_name)]['time'] > 30) and (watertank_time_tracker[str(plant_name)]['control'] == True)) or (current_time - plant_dictionary[str(plant_name)]['last_water'] < 10):
+    if((current_time - watertank_time_tracker[str(plant_name)]['time'] > watertank_control_time) and (watertank_time_tracker[str(plant_name)]['control'] == True)) or (current_time - plant_dictionary[str(plant_name)]['last_water'] < 120):
 
         # Get the values from ultrasonic sensor for chosen plant
         water_tank_volume = CoT.ultrasonic_value_key_list[plant_name-1].get()['Value']
