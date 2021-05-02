@@ -14,7 +14,7 @@ import time
 
 # ----------------------------------------------------------------------------------------------------------------------
 
-# First time python is run (reboot system)
+# First time python is run (If a reboot happens)
 plant_dictionary = plant_modules.plant_setup()
 
 
@@ -22,7 +22,7 @@ while True:
     """
     Main loop of the system
     """
-    # Always checks on if user wants a new plant(create a new or switch), or save a new configuration.
+    # Checks the signals from Circus of Things, to see if user wants to save new configuration or update CoT with chosen plant configuration. 
     new_plant = CoT.new_plant_configuration_key2.get()['Value']
     save_configuration = CoT.save_configuration_key2.get()['Value']
 
@@ -79,8 +79,8 @@ while True:
 
     print('##########################################################')
 
-
+    # Store the dictionary with every plant configuration to the json file. 
     with open('plant_dictionaries_v2.json', 'w') as json_file:
         json.dump(plant_dictionary, json_file)
 
-    #time.sleep(1)
+    #time.sleep(1) # To slow down communication with CoT

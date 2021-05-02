@@ -10,7 +10,7 @@ import time
 
 token = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k"
 
-#### Class module that will connect a variable to Circus of Things. ####------------------------------------------------
+#### Class module that will be used to connect a variable to a signal in Circus of Things. ####------------------------------------------------
 class COT_Signal:
     def __init__(self, key, token):
         '''
@@ -47,7 +47,7 @@ class COT_Signal:
 
 #### Plant setup & configuration keys ####------------------------------------------------------------------------------
 
-## Keys for user input
+## Keys for user input regarding threshold values. 
 new_plant_configuration_key2 = COT_Signal('10620', token)
 plant_number_key2 = COT_Signal('7801', token)
 soil_requirement_key2 = COT_Signal('5893', token)
@@ -59,17 +59,19 @@ save_configuration_key2 = COT_Signal('24567', token)
 active_status_key2 = COT_Signal('3904', token)
 
 
-#### Plant sensor signal array keys ####------------------------------------------------------------------------------------
+#### Signal keys for a Plant array with sensor values ####------------------------------------------------------------------------------------
 
 """
 The arrangment of the sensor value posision in array:
-plant name > 10^18             range: (1-8)
+    
+plant name > 10^18             range: (1-8)           (Most significant "bit"/"placement")
 10^15 < soil_value < 10^18     range: (0-100)
 10^9 < lux_value < 10^15       range: (0-999999)
 10^6 < temp_value < 10^9       range: (0-100)
 10^3 < humid_value < 10^6      range: (0-100)
-water_level < 10^3             range: (0-100)
-Example of plant 1 with all values maxed out: 1100999999100100100
+water_level < 10^3             range: (0-100)         (Least significant "bit"/"placement")
+
+Example of plant 1 with all values maxed out: 1100999999100100100 <- (1,100,999999,100,100,100)
 """
 
 # Plant 1
@@ -101,17 +103,19 @@ plant_sensor_array_list = [COT_Signal(plant_1_sensor_key, token),  # Plant 1
 
 
 
-#### Plant system state signal array keys ####--------------------------------------------------------------------------
+#### Signal keys for a plant array with system states ####--------------------------------------------------------------------------
 
 """
 The arrangment of the system state posision in array:
-plant name > 10^4
+    
+plant name > 10^4             (most significant "bit"/"placement")
 10^3 < pump_state < 10^4
 10^2 < light_state < 10^3
 10^1 < temp_state < 10^2
 10^0 < humid_state < 10^1
-water_tank_state < 10^0
-Example of plant 1 with random states: 101220
+water_tank_state < 10^0       (least signifcant "bit"/"placcement")
+
+Example of plant 1 with random states: 101220 <- (1, 0, 1, 2, 2, 0)
 """
 
 # Plant 1
@@ -281,7 +285,9 @@ humid_8_key = COT_Signal('', token)
 ultrasonic_8_key = COT_Signal('', token)
 
 
-
+"""
+List of keys that are used for functions that compares thresholds values with sensor values. 
+"""
 soil_value_key_list = [soil_1_key,
                        soil_2_key,
                        soil_3_key,

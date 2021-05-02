@@ -1,8 +1,3 @@
-# @Date:   2021-04-24T13:38:04+02:00
-# @Last modified time: 2021-04-29T15:12:50+02:00
-
-
-
 '''
 This file contains modules & functions related to the plant.
 All functions are sorted in the same way it flows through the main loop:
@@ -75,7 +70,7 @@ def plant_setup():
     # Reset the signal new_plant_configuration back to zero, to tell the user that it's finished. 
     CoT.new_plant_configuration_key2.put(0)
 
-    return dictionaries # Return the dictionary with the plants configuration. 
+    return dictionaries # Return the dictionary with every plants configurations. 
 
 
 # plant_number is string, plant_configuration is a single dictionary.
@@ -148,12 +143,16 @@ def update_plant_system_states(plant_dictionary, plant_name):
 #### Soil moisture check ####-------------------------------------------------------------------------------------------
 
 # Soil check variables:
+    
 # Dictionary of timestampes for when soil control started for each plant
 soil_time_tracker = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0,'7':0,'8':0}
+
 # Dictionary of booleans for each plant if soil control is in progress or not
 soil_control = {'1':False,'2':False,'3':False,'4':False,'5':False,'6':False,'7':False,'8':False}
+
 # Time of control check for soil in seconds. 30 minutes = 1800 seconds
 plant_soil_check_control_time = 1800
+
 # Interval time between watering a plant in seconds. 12 Hours interval = 43200 seconds
 plant_water_interval = 86400
 
@@ -162,10 +161,8 @@ def soil_check(plant_dictionary, plant_name):
     Function which takes the plant name as an argument and checks if the plant need water or not.
     When the plant need water it changes the plants water status to True(1)
     """
-    if 'last_water' not in plant_dictionary[str(plant_name)].keys(): # Adding 'last_water' if not allready in dictionary
-        plant_dictionary[str(plant_name)]['last_water'] = []
 
-    # setting up varibales used in function
+    # Setting up varibales used in function
     current_time = int(time.time()) # current time in epoch
     soil_value = plant_dictionary[str(plant_name)]['soil_value']
     Threshold = plant_dictionary[str(plant_name)]['soil_requirement']
@@ -175,23 +172,28 @@ def soil_check(plant_dictionary, plant_name):
 
     # Checking if current soil moisture is under requirement and if it is more than 'water_interval' seconds since last water.
     if (soil_value < Threshold) and ((current_time - last_water) > water_interval):
-        # if we are in soil_control we carry on. If not we, set soil_control to True and start the timer.
+        
+        # If we are in soil_control we carry on. If not we, set soil_control to True and start the timer.
         if soil_control[str(plant_name)]:
-            # if the time now subtracted by the time we entered soil_control is bigger than given control_wait_time we carry on.
+            
+            # If the time now subtracted by the time we entered soil_control is bigger than given control_wait_time we carry on.
             if (current_time - soil_time_tracker[str(plant_name)]) > control_wait_time:
                 soil_control[str(plant_name)] = False # soil_control is finished and we set the boolean to False.
                 plant_dictionary[str(plant_name)]['pump_state'] = 4 # soil_control has passed and we set pump_state to 1.
                 #print('watering plant',str(plant_name)+'!')
                 return plant_dictionary
-            # we are still waiting for control time to pass. do nothing and return plant_dictionary.
+            
+            # We are still waiting for control time to pass. do nothing and return plant_dictionary.
             else:
                 return plant_dictionary
-        # set soil_control to True and start the timer. Next time we enter function it will check if the control_wait_time
+            
+        # Set soil_control to True and start the timer. Next time we enter function it will check if the control_wait_time
         # has passed and we can water the plant.
         else:
             print('Plant', str(plant_name), 'soil control in progress! If pass, water in', control_wait_time, 'seconds.')
             soil_time_tracker[str(plant_name)] = int(time.time())
             soil_control[str(plant_name)] = True
+            
     # All is good and we are not going to control the soil value. Set it to False.
     # If we are in soil_control, this will cancel the control.
     else:
@@ -204,10 +206,13 @@ def soil_check(plant_dictionary, plant_name):
 #### Lux sensor check ####----------------------------------------------------------------------------------------------
 
 # Lux check variables:
+    
 # Dictionary of timestampes for when lux control started for each plant
 lux_time_tracker = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0,'7':0,'8':0}
+
 # Dictionary of booleans for each plant if lux control is in progress or not
 lux_control = {'1':False,'2':False,'3':False,'4':False,'5':False,'6':False,'7':False,'8':False}
+
 # Time for control check for lux in seconds. 5 minutes = 300 seconds
 lux_check_control_time = 300
 
@@ -225,18 +230,22 @@ def lux_check(plant_dictionary, plant_name):
 
     # Checks if light value(in lux) is under threshold and time is between 11:00 and 21:00.
     if (lux_value < lux_threshold) and (10 < now.hour < 21):
-        # if we are in lux_control we carry on. If not we, set lux_control to True and start the timer.
+        
+        # If we are in lux_control we carry on. If not we, set lux_control to True and start the timer.
         if lux_control[str(plant_name)]:
-            # if the time now subtracted by the time we entered lux_control is bigger than given control_wait_time we carry on.
+            
+            # If the time now subtracted by the time we entered lux_control is bigger than given control_wait_time we carry on.
             if (current_time - lux_time_tracker[str(plant_name)]) > control_wait_time:
                 plant_dictionary[str(plant_name)]['light_state'] = 1
                 lux_control[str(plant_name)] = False
                 #print('Light state is set to 1!!!!!!')
                 return plant_dictionary
-            # we are still waiting for control time to pass. do nothing and return plant_dictionary.
+            
+            # We are still waiting for control time to pass. do nothing and return plant_dictionary.
             else:
                 return plant_dictionary
-        # set lux_control to True and start the timer. Next time we enter function it will check if the control_wait_time
+            
+        # Set lux_control to True and start the timer. Next time we enter function it will check if the control_wait_time
         # has passed and we can turn on the light.
         else:
             lux_control[str(plant_name)] = True
@@ -302,9 +311,10 @@ def checking_temperature(plant_dictionary, plant_name):
             else:
                 temp_time_tracker[str(plant_name)]['stage'] = 1
 
+            # Store the state of temperature regarding current plant environment
             plant_dictionary[str(plant_name)]['temperature_state'] = 2
 
-            return plant_dictionary # Return a state value that is going to be added to array sent back to ESP through Circus of Things.
+            return plant_dictionary # Return dictionary with updated state that is going to be added to array sent back to ESP through Circus of Things.
 
         # If sensor values are lower than threshold value
         elif temp_value < temp_minimum_threshold:
@@ -325,9 +335,10 @@ def checking_temperature(plant_dictionary, plant_name):
             else:
                 temp_time_tracker[str(plant_name)]['stage'] = 3
 
+            # Store the state of temperature regarding current plant environment
             plant_dictionary[str(plant_name)]['temperature_state'] = 1
 
-            return plant_dictionary # Return a state value that is going to be added to array sent back to ESP through Circus of Things.
+            return plant_dictionary # Return dictionary with updated state that is going to be added to array sent back to ESP through Circus of Things.
 
         # Otherwise everythings is okay, and we'll return a state saying so.
         else:
@@ -336,16 +347,16 @@ def checking_temperature(plant_dictionary, plant_name):
             return plant_dictionary
         #print('return temp state')
 
-    # if first if statement was false, and the system is not in control mode, then start control mode and update time when it started.
+    # If first if statement was false, and the system is not in control mode, then start control mode and update time when it started.
     elif temp_time_tracker[str(plant_name)]['control'] == False:
         temp_time_tracker[str(plant_name)]['time'] = time.time()
         temp_time_tracker[str(plant_name)]['control'] = True
 
         #print('start control of temp')
 
-    # If none of the statements are true, then it means the system is currently running in control mode.
+    ## If none of the statements are true, then it means the system is currently running in control mode.
     #else:
-        #print(f"waiting for temp for plant {plant_name}")
+    #    #print(f"waiting for temp for plant {plant_name}")
 
     return plant_dictionary
 
@@ -361,6 +372,7 @@ humid_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{
                       '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
 
 humid_control_time = 20 #seconds
+
 def checking_humidity(plant_dictionary, plant_name):
     """
     Compare sensor values with threshold value, and returns back what state a chosen plant is in.
@@ -395,6 +407,7 @@ def checking_humidity(plant_dictionary, plant_name):
                 humid_time_tracker[str(plant_name)]['stage'] = 0
                 #print('email about dryness')
 
+            # Store the state of humidiity regarding current plant environment
             plant_dictionary[str(plant_name)]['humidity_state'] = 1
             return plant_dictionary
 
@@ -407,10 +420,7 @@ def checking_humidity(plant_dictionary, plant_name):
             plant_dictionary[str(plant_name)]['humidity_state'] = 0
             return plant_dictionary
 
-
-        #print('Return humid state')
-
-    # If we've alreadu compared values, then previous statement is false, and we would like to run a control mode, checking if system should warn the owner about the state.
+    # If we've already compared values, then previous statement is false, and we would like to run a control mode, checking if system should warn the owner about the state.
     elif humid_time_tracker[str(plant_name)]['control'] == False:
         humid_time_tracker[str(plant_name)]['time'] = time.time()
         humid_time_tracker[str(plant_name)]['control'] = True
@@ -497,15 +507,15 @@ def put_system_states_to_CoT(plant_dictionary, plant_name):
     to CoT. Also updates last_water if pump_state == 1 and returns it to plant_dictionary.
     """
 
-    # encode states from plant dictionary into integer with 5 digits
+    # Encode states from plant dictionary into integer with 5 digits
     system_states = CoT.encode_plant_system_states(plant_dictionary, plant_name)
 
-    # if system_states is the same as last_system_states we dont send to CoT.
+    # If system_states is the same as last_system_states we dont send to CoT.
     if system_states != last_system_states:
         CoT.plant_state_array_list[plant_name - 1].put(system_states) # put states to CoT.
         last_system_states[str(plant_name)] = system_states # update last_system_states to what we sent.
 
-    # update last watering if pump_state is not 0
+    # Update last watering if pump_state is not 0
     if plant_dictionary[str(plant_name)]['pump_state'] != 0:
         plant_dictionary[str(plant_name)]['last_water'] = int(time.time())
 
