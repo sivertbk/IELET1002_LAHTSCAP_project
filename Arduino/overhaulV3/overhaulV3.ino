@@ -15,8 +15,8 @@ TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 //    https://circusofthings.com
 //    lib mappe i giten
 
-#define num_readings 6
-#define sleep_time 7
+#define num_readings 12
+#define sleep_time 14
 #define second 1000000         // converts micro seconds to seconds
 #define pump_magnitude 255     // Constant to say how fast the pump should run when it is running (given in 8 bits)
 #define led_brightness 150
@@ -77,10 +77,11 @@ RTC_DATA_ATTR float last_humidity_val;
 RTC_DATA_ATTR float last_temperature_val;
 RTC_DATA_ATTR float last_lux_val;
 RTC_DATA_ATTR float last_distance_val;
-
-RTC_DATA_ATTR char text_color_temp;
-RTC_DATA_ATTR char text_color_soil;
-RTC_DATA_ATTR char text_color_water;
+/*
+char text_color_temp;
+char text_color_soil;
+char text_color_water;
+*/
 
 // State variables
 int water_tank_state;
@@ -265,6 +266,7 @@ void setup(){
 
     oled_start = millis();
     //if statements to determine the color of the displayed values based on how "good" they are
+    /*
     if(temp_state = 0){
       text_color_temp = TFT_GREEN;
     }
@@ -294,6 +296,7 @@ void setup(){
     else if (water_tank_state == 2){
       text_color_water = TFT_RED;
     }
+    */
 
     //Setting the OLED to show the last measured values for 10 seconds after the touch pin is activated
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -301,21 +304,21 @@ void setup(){
       
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
       tft.print("Temperatur: ");  
-      tft.setTextColor(text_color_temp, TFT_BLACK);
+      tft.setTextColor(TFT_GREEN, TFT_BLACK);
       tft.print(int(last_temperature_val));
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
       tft.println(" C");
 
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
       tft.print("Soilsensor: ");  
-      tft.setTextColor(text_color_soil, TFT_BLACK);
+      tft.setTextColor(TFT_GREEN, TFT_BLACK);
       tft.print(int(last_soil_val));
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
       tft.println(" %");
 
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
       tft.print("Vannmengde: ");  
-      tft.setTextColor(text_color_water, TFT_BLACK);
+      tft.setTextColor(TFT_GREEN, TFT_BLACK);
       tft.print(int(last_distance_val));
       tft.setTextColor(TFT_WHITE, TFT_BLACK);
       tft.println(" %");
