@@ -1,5 +1,5 @@
 # @Date:   2021-05-04T11:07:52+02:00
-# @Last modified time: 2021-05-04T12:15:32+02:00
+# @Last modified time: 2021-05-04T14:23:18+02:00
 
 
 
@@ -11,7 +11,7 @@ This is the newest version of the file.
 
 import plant_modules # All functions that are being used
 import CoT # Communication module with Circus of Things
-import serial_messages # Function for Serial monitor / Console
+import terminal_messages # Function for Serial monitor / Console
 import json
 from datetime import datetime
 import time
@@ -72,7 +72,7 @@ while True:
     print('PLANT STATUSES:                           CLOCK:', datetime.fromtimestamp(int(time.time())).strftime('%H:%M:%S'))
     for plant_name in range(1, 9):
         if plant_dictionary[str(plant_name)]['active_status']:
-            print('\n  Plant', str(plant_name) +':     ', serial_messages.plant_checktime_left(str(plant_name)))
+            print('\n  Plant', str(plant_name) +':     ', terminal_messages.plant_checktime_left(str(plant_name)))
             print('  Soil:', int(plant_dictionary[str(plant_name)]['soil_value']), '     Threshold:', int(plant_dictionary[str(plant_name)]['soil_requirement']))
             print('  Pump:', plant_dictionary[str(plant_name)]['pump_state'], '      Last given water:', datetime.fromtimestamp(plant_dictionary[str(plant_name)]['last_water']).strftime('%H:%M:%S %d/%m-%Y'))
 
