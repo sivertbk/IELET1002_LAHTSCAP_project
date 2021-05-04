@@ -1,5 +1,5 @@
 # @Date:   2021-04-21T16:31:52+02:00
-# @Last modified time: 2021-04-27T16:41:46+02:00
+# @Last modified time: 2021-05-04T11:09:52+02:00
 
 import requests
 import json
@@ -65,11 +65,11 @@ active_status_key2 = COT_Signal('3904', token)
 The arrangment of the sensor value posision in array:
 plant name > 10^18             range: (1-8)
 10^15 < soil_value < 10^18     range: (0-100)
-10^9 < lux_value < 10^15       range: (0-999999)
+10^9 < lux_value < 10^15       range: (0-120000)
 10^6 < temp_value < 10^9       range: (0-100)
 10^3 < humid_value < 10^6      range: (0-100)
 water_level < 10^3             range: (0-100)
-Example of plant 1 with all values maxed out: 1100999999100100100
+Example of plant 1 with all values maxed out: 1100120000100100100
 """
 
 # Plant 1

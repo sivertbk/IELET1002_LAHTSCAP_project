@@ -1,3 +1,8 @@
+# @Date:   2021-05-04T11:07:52+02:00
+# @Last modified time: 2021-05-04T12:14:58+02:00
+
+
+
 '''
 This file contains modules & functions related to the plant.
 All functions are sorted in the same way it flows through the main loop:
@@ -17,9 +22,9 @@ import json
 def new_default_dictionary():
     """
     A default plant dictionary used for new plant configurations.
-    Everytime this is run, it'll return a default plant configuration. 
+    Everytime this is run, it'll return a default plant configuration.
     This function is used whenever a new plant is created and isn't already stored in dictionary with all
-    plant's configuration. 
+    plant's configuration.
     """
     default = {'plant_number':CoT.plant_number_key2.get()['Value'],
                'active_status':CoT.active_status_key2.get()['Value'],
@@ -37,23 +42,23 @@ def plant_setup():
     '''
     Used for the first time to get the dictionaries stored in json_file.
     Afterwards, it's used to get the values for plants that user has chosen
-    and update user configuration panel in Circus of Things. 
+    and update user configuration panel in Circus of Things.
     (It will also create and store a new configuration into the dictionary if
      there isn't stored any configuration in the dictionary).
     '''
 
-    # From json file, store the dictionary to a variable. 
+    # From json file, store the dictionary to a variable.
     with open('plant_dictionaries_v2.json') as json_file:
         dictionaries = json.load(json_file)
 
-    # Get the plant number that user has chosen in Circus of Things. 
+    # Get the plant number that user has chosen in Circus of Things.
     plant_number = str(CoT.plant_number_key2.get()['Value'])
 
-    # If the plant doesn't exist in dictionary, then create a new key attached with default configuration. 
+    # If the plant doesn't exist in dictionary, then create a new key attached with default configuration.
     if plant_number not in dictionaries:
         dictionaries[plant_number] = new_default_dictionary()
 
-    # Otherwise, update the user configuration panel with the values that the user want to take a look at. 
+    # Otherwise, update the user configuration panel with the values that the user want to take a look at.
     else:
         CoT.plant_number_key2.put(dictionaries[plant_number]['plant_number'])
         CoT.active_status_key2.put(dictionaries[plant_number]['active_status'])
@@ -67,10 +72,10 @@ def plant_setup():
     with open('plant_dictionaries_v2.json', 'w') as json_file:
         json.dump(dictionaries, json_file)
 
-    # Reset the signal new_plant_configuration back to zero, to tell the user that it's finished. 
+    # Reset the signal new_plant_configuration back to zero, to tell the user that it's finished.
     CoT.new_plant_configuration_key2.put(0)
 
-    return dictionaries # Return the dictionary with every plants configurations. 
+    return dictionaries # Return the dictionary with every plants configurations.
 
 
 # plant_number is string, plant_configuration is a single dictionary.
@@ -78,12 +83,12 @@ def plant_configuration(plant_number,plant_configuration):
     """
     This function is used for whenever the user wants to change some of the configuration to an already exisiting plant
     """
-    
+
     # From the json file, get our stored dictionary of every plant configuration user has made .
     with open('plant_dictionaries_v2.json') as json_file:
         dictionaries = json.load(json_file)
 
-    # Update the user configuration for the plant that user has chosen to adjust from Circus of Things. 
+    # Update the user configuration for the plant that user has chosen to adjust from Circus of Things.
     plant_configuration['soil_requirement'] = CoT.soil_requirement_key2.get()['Value']
     plant_configuration['lux_requirement'] = CoT.light_requirement_key2.get()['Value']
     plant_configuration['temperature_maximum'] = CoT.temperature_maximum_key2.get()['Value']
@@ -96,7 +101,7 @@ def plant_configuration(plant_number,plant_configuration):
         dictionaries[plant_number] = plant_configuration
         json.dump(dictionaries, json_file)
 
-    # Reset save_configuration to tell the user that the configuration has been saved. 
+    # Reset save_configuration to tell the user that the configuration has been saved.
     CoT.save_configuration_key2.put(0)
 
 
@@ -105,6 +110,7 @@ def plant_configuration(plant_number,plant_configuration):
 
 def update_plant_sensor_values(plant_dictionary, plant_name):
     """
+    Takes sensor values from sensor signal array
     This function takes the given plant's dictionary and updates sensor values, then returns updated dictionary.
     """
     plant_sensor_dict = CoT.decode_sensor_values(plant_name)
@@ -115,15 +121,28 @@ def update_plant_sensor_values(plant_dictionary, plant_name):
     plant_dictionary[str(plant_name)]['water_level'] = plant_sensor_dict['water_level']
     return plant_dictionary
 
+
+
 def update_plant_sensor_values_v2(plant_dictionary, plant_name):
     """
+    Takes sensor values from sensor key list
     This function takes the given plant's dictionary and updates sensor values, then returns updated dictionary.
+    Only checks water tank once a day and after pump have been shut off.
     """
+    current_time = int(time.time()) # current time in epoch
+    now = datetime.now() # current time in datetime
+    last_water = plant_dictionary[str(plant_name)]['last_water']
+
     plant_dictionary[str(plant_name)]['soil_value'] = CoT.soil_value_key_list[plant_name - 1].get()['Value']
     plant_dictionary[str(plant_name)]['lux_value'] = CoT.lux_value_key_list[plant_name - 1].get()['Value']
     plant_dictionary[str(plant_name)]['temperature_value'] = CoT.temp_value_key_list[plant_name - 1].get()['Value']
     plant_dictionary[str(plant_name)]['humidity_value'] = CoT.humid_value_key_list[plant_name - 1].get()['Value']
-    plant_dictionary[str(plant_name)]['water_level'] = CoT.ultrasonic_value_key_list[plant_name - 1].get()['Value']
+    # we request water tank level 5 minutes after pump has been shut off for 5 minutes.
+    if ((current_time - last_water) > 300) and ((current_time - last_water) < 600):
+        plant_dictionary[str(plant_name)]['water_level'] = CoT.ultrasonic_value_key_list[plant_name - 1].get()['Value']
+    # we request water tank level every day between 12:00 and 12:05.
+    elif (now.hour == 12) and (now.minute < 6):
+        plant_dictionary[str(plant_name)]['water_level'] = CoT.ultrasonic_value_key_list[plant_name - 1].get()['Value']
     return plant_dictionary
 
 
@@ -143,7 +162,7 @@ def update_plant_system_states(plant_dictionary, plant_name):
 #### Soil moisture check ####-------------------------------------------------------------------------------------------
 
 # Soil check variables:
-    
+
 # Dictionary of timestampes for when soil control started for each plant
 soil_time_tracker = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0,'7':0,'8':0}
 
@@ -156,7 +175,7 @@ plant_soil_check_control_time = 1800
 # Interval time between watering a plant in seconds. 12 Hours interval = 43200 seconds
 plant_water_interval = 86400
 
-def soil_check(plant_dictionary, plant_name):
+def check_soil(plant_dictionary, plant_name):
     """
     Function which takes the plant name as an argument and checks if the plant need water or not.
     When the plant need water it changes the plants water status to True(1)
@@ -172,28 +191,28 @@ def soil_check(plant_dictionary, plant_name):
 
     # Checking if current soil moisture is under requirement and if it is more than 'water_interval' seconds since last water.
     if (soil_value < Threshold) and ((current_time - last_water) > water_interval):
-        
+
         # If we are in soil_control we carry on. If not we, set soil_control to True and start the timer.
         if soil_control[str(plant_name)]:
-            
+
             # If the time now subtracted by the time we entered soil_control is bigger than given control_wait_time we carry on.
             if (current_time - soil_time_tracker[str(plant_name)]) > control_wait_time:
                 soil_control[str(plant_name)] = False # soil_control is finished and we set the boolean to False.
                 plant_dictionary[str(plant_name)]['pump_state'] = 4 # soil_control has passed and we set pump_state to 1.
                 #print('watering plant',str(plant_name)+'!')
                 return plant_dictionary
-            
+
             # We are still waiting for control time to pass. do nothing and return plant_dictionary.
             else:
                 return plant_dictionary
-            
+
         # Set soil_control to True and start the timer. Next time we enter function it will check if the control_wait_time
         # has passed and we can water the plant.
         else:
             print('Plant', str(plant_name), 'soil control in progress! If pass, water in', control_wait_time, 'seconds.')
             soil_time_tracker[str(plant_name)] = int(time.time())
             soil_control[str(plant_name)] = True
-            
+
     # All is good and we are not going to control the soil value. Set it to False.
     # If we are in soil_control, this will cancel the control.
     else:
@@ -206,7 +225,7 @@ def soil_check(plant_dictionary, plant_name):
 #### Lux sensor check ####----------------------------------------------------------------------------------------------
 
 # Lux check variables:
-    
+
 # Dictionary of timestampes for when lux control started for each plant
 lux_time_tracker = {'1':0,'2':0,'3':0,'4':0,'5':0,'6':0,'7':0,'8':0}
 
@@ -216,7 +235,7 @@ lux_control = {'1':False,'2':False,'3':False,'4':False,'5':False,'6':False,'7':F
 # Time for control check for lux in seconds. 5 minutes = 300 seconds
 lux_check_control_time = 300
 
-def lux_check(plant_dictionary, plant_name):
+def check_lux(plant_dictionary, plant_name):
     """
     Function which takes the plant name as an argument and checks if the plant need more light or not.
     When the plant need light it changes the plants light status to True(1)
@@ -229,22 +248,22 @@ def lux_check(plant_dictionary, plant_name):
     control_wait_time = lux_check_control_time
 
     # Checks if light value(in lux) is under threshold and time is between 11:00 and 21:00.
-    if (lux_value < lux_threshold) and (10 < now.hour < 21):
-        
+    if (lux_value < lux_threshold) and (10 < now.hour) and (now.hour < 21):
+
         # If we are in lux_control we carry on. If not we, set lux_control to True and start the timer.
         if lux_control[str(plant_name)]:
-            
+
             # If the time now subtracted by the time we entered lux_control is bigger than given control_wait_time we carry on.
             if (current_time - lux_time_tracker[str(plant_name)]) > control_wait_time:
                 plant_dictionary[str(plant_name)]['light_state'] = 1
                 lux_control[str(plant_name)] = False
                 #print('Light state is set to 1!!!!!!')
                 return plant_dictionary
-            
+
             # We are still waiting for control time to pass. do nothing and return plant_dictionary.
             else:
                 return plant_dictionary
-            
+
         # Set lux_control to True and start the timer. Next time we enter function it will check if the control_wait_time
         # has passed and we can turn on the light.
         else:
@@ -271,7 +290,7 @@ temp_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{'
                      '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
 
 temp_control_time = 10 # seconds
-def checking_temperature(plant_dictionary, plant_name):
+def check_temperature(plant_dictionary, plant_name):
     """
 
     Compare sensor values with threshold value, and returns back what state a chosen plant is in.
@@ -281,8 +300,8 @@ def checking_temperature(plant_dictionary, plant_name):
     current_time = time.time()
 
 
-    # If the time has passed more than chosen time AND we're in control mode (means we've run it once before).   
-    if((current_time - temp_time_tracker[str(plant_name)]['time'] > temp_control_time) and (temp_time_tracker[str(plant_name)]['control'] == True)): 
+    # If the time has passed more than chosen time AND we're in control mode (means we've run it once before).
+    if((current_time - temp_time_tracker[str(plant_name)]['time'] > temp_control_time) and (temp_time_tracker[str(plant_name)]['control'] == True)):
 
         # Make sure we're reseting control variable, so timer will run again.
         temp_time_tracker[str(plant_name)]['control'] = False
@@ -373,7 +392,7 @@ humid_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{
 
 humid_control_time = 20 #seconds
 
-def checking_humidity(plant_dictionary, plant_name):
+def check_humidity(plant_dictionary, plant_name):
     """
     Compare sensor values with threshold value, and returns back what state a chosen plant is in.
     """
@@ -382,7 +401,7 @@ def checking_humidity(plant_dictionary, plant_name):
     current_time = time.time()
 
     # If the time has passed more than chosen time AND we're in control mode (means we've run it once before).
-    if((current_time - humid_time_tracker[str(plant_name)]['time'] > humid_control_time) and (humid_time_tracker[str(plant_name)]['control'] == True)): 
+    if((current_time - humid_time_tracker[str(plant_name)]['time'] > humid_control_time) and (humid_time_tracker[str(plant_name)]['control'] == True)):
 
         # Get following values: The humid value stored in CoT and the threshold value stored in dictionary from user input.
         humid_threshold = plant_dictionary[str(plant_name)]['humidity_requirement']
@@ -444,7 +463,7 @@ watertank_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'
 
 watertank_control_time = 30 #seconds
 
-def checking_water_tank_volume(plant_dictionary, plant_name):
+def check_water_tank(plant_dictionary, plant_name):
     """
     Checking how much water that are left in the tank.
     """

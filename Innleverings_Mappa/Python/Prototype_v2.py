@@ -1,12 +1,17 @@
+# @Date:   2021-05-04T11:07:52+02:00
+# @Last modified time: 2021-05-04T12:15:32+02:00
+
+
+
 """
 This file contains codeflow suggestion for how the codeflow would work in
 the project.
-This is the newest version of the file. 
+This is the newest version of the file.
 """
 
 import plant_modules # All functions that are being used
 import CoT # Communication module with Circus of Things
-import serial_messages # Function for Serial monitor / Console 
+import serial_messages # Function for Serial monitor / Console
 import json
 from datetime import datetime
 import time
@@ -22,7 +27,7 @@ while True:
     """
     Main loop of the system
     """
-    # Checks the signals from Circus of Things, to see if user wants to save new configuration or update CoT with chosen plant configuration. 
+    # Checks the signals from Circus of Things, to see if user wants to save new configuration or update CoT with chosen plant configuration.
     new_plant = CoT.new_plant_configuration_key2.get()['Value']
     save_configuration = CoT.save_configuration_key2.get()['Value']
 
@@ -31,7 +36,7 @@ while True:
     if (new_plant == 1):
         plant_dictionary = plant_modules.plant_setup()
 
-    # Will be true if user wants to save new configuration for a chosen plant. 
+    # Will be true if user wants to save new configuration for a chosen plant.
     if (save_configuration == 1):
         plant_number = str(CoT.plant_number_key2.get()['Value'])
         plant_modules.plant_configuration(plant_number, plant_dictionary[plant_number])
@@ -48,11 +53,11 @@ while True:
 
             #### Check sensors ####-------------------------------------------------------------------------------------
 
-            plant_dictionary = plant_modules.soil_check(plant_dictionary, plant_name)
-            plant_dictionary = plant_modules.lux_check(plant_dictionary, plant_name)
-            plant_dictionary = plant_modules.checking_temperature(plant_dictionary, plant_name)
-            plant_dictionary = plant_modules.checking_humidity(plant_dictionary, plant_name)
-            plant_dictionary = plant_modules.checking_water_tank_volume(plant_dictionary, plant_name)
+            plant_dictionary = plant_modules.check_soil(plant_dictionary, plant_name)
+            plant_dictionary = plant_modules.check_lux(plant_dictionary, plant_name)
+            plant_dictionary = plant_modules.check_temperature(plant_dictionary, plant_name)
+            plant_dictionary = plant_modules.check_humidity(plant_dictionary, plant_name)
+            plant_dictionary = plant_modules.check_water_tank(plant_dictionary, plant_name)
 
             #### Put updated states to CoT ####-------------------------------------------------------------------------
 
@@ -79,8 +84,8 @@ while True:
 
     print('##########################################################')
 
-    # Store the dictionary with every plant configuration to the json file. 
+    # Store the dictionary with every plant configuration to the json file.
     with open('plant_dictionaries_v2.json', 'w') as json_file:
         json.dump(plant_dictionary, json_file)
 
-    #time.sleep(1) # To slow down communication with CoT
+    #time.sleep(120) # To slow down communication with CoT

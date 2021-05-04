@@ -1,5 +1,5 @@
 # @Date:   2021-04-21T16:31:52+02:00
-# @Last modified time: 2021-04-27T16:41:46+02:00
+# @Last modified time: 2021-05-04T11:30:08+02:00
 
 import requests
 import json
@@ -47,7 +47,7 @@ class COT_Signal:
 
 #### Plant setup & configuration keys ####------------------------------------------------------------------------------
 
-## Keys for user input regarding threshold values. 
+## Keys for user input regarding threshold values.
 new_plant_configuration_key2 = COT_Signal('10620', token)
 plant_number_key2 = COT_Signal('7801', token)
 soil_requirement_key2 = COT_Signal('5893', token)
@@ -63,15 +63,15 @@ active_status_key2 = COT_Signal('3904', token)
 
 """
 The arrangment of the sensor value posision in array:
-    
+
 plant name > 10^18             range: (1-8)           (Most significant "bit"/"placement")
 10^15 < soil_value < 10^18     range: (0-100)
-10^9 < lux_value < 10^15       range: (0-999999)
+10^9 < lux_value < 10^15       range: (0-120000)
 10^6 < temp_value < 10^9       range: (0-100)
 10^3 < humid_value < 10^6      range: (0-100)
 water_level < 10^3             range: (0-100)         (Least significant "bit"/"placement")
 
-Example of plant 1 with all values maxed out: 1100999999100100100 <- (1,100,999999,100,100,100)
+Example of plant 1 with all values maxed out: 1100120000100100100 <- (1,100,120000,100,100,100)
 """
 
 # Plant 1
@@ -107,7 +107,7 @@ plant_sensor_array_list = [COT_Signal(plant_1_sensor_key, token),  # Plant 1
 
 """
 The arrangment of the system state posision in array:
-    
+
 plant name > 10^4             (most significant "bit"/"placement")
 10^3 < pump_state < 10^4
 10^2 < light_state < 10^3
@@ -286,7 +286,7 @@ ultrasonic_8_key = COT_Signal('', token)
 
 
 """
-List of keys that are used for functions that compares thresholds values with sensor values. 
+List of keys that are used for functions that compares thresholds values with sensor values.
 """
 soil_value_key_list = [soil_1_key,
                        soil_2_key,
