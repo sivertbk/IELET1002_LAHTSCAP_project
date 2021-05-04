@@ -23,12 +23,14 @@ TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 #define Threshold 40 /* Greater the value, more the sensitivity on touchpin*/
 
 // COT Config
+//char ssid[] = "ASUS 1ETG HOYRE 2,4"; // Name on SSID sivert's phone
+//char psk[] = "34353637"; // Password for SSID siverts's phone
 char ssid[] = "kameraBad2"; // Name on SSID
 char psk[] = "9D2Remember"; // Password for SSID
 char token1[] = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k"; // COT User
 char server[] = "www.circusofthings.com"; // Site communication
 
-// Plant (Important if more plants are connected to the same RPi)
+// Plant (viktig omm det kobles flere planter på samme rpi)
 const int plant = 1;
 
 // COT Keys
@@ -42,6 +44,7 @@ char luxsensor_key1[] = "17733";
 char ultrasonic_key1[] = "28799";
 
 // Pins
+//dette fungerer men har hørt at CoT tuller med ADC2 og random nerd tutorial sier at GPIO 35, 34, 39 og 36 er input only
 const int soilsensor_pin = 32;
 const int uvsensor_pin = 33;
 const int echo_pin = 25;
@@ -115,9 +118,10 @@ unsigned long oled_start;
 Adafruit_AHTX0 aht;                             // Defines the function used to retrive temp and humi
 DFRobot_VEML7700 veml;                          // Defines the function used to retrive Lux
 CircusESP32Lib circusESP32(server, ssid, psk);  // Defines the function used to communicate to CoT
+//TaskHandle_t Task1;                             // etteller annet RTOS relevant Pål kan det
 
-char wakeup_reason; // variable for eksternal wakeup
-void callback(){} //callback function for touch interrupt
+char wakeup_reason; // variabel for eksternal wakeup
+void callback(){} //callback funksjon for touch interrupt
 
 void setup(){
 
@@ -161,7 +165,7 @@ void setup(){
   // Code for mesurement when awakening for sleep
   if(wakeup_reason == ESP_SLEEP_WAKEUP_TIMER){
     
-    Serial.println("Collecting values: " + String(boot_counter) + ". for: " + String(num_readings) + ". times");
+    Serial.println("Henter verdier: " + String(boot_counter) + ". av: " + String(num_readings) + ". ganger");
     // retreaving data
     soil[boot_counter] = get_soil(soilsensor_pin);
     uv[boot_counter] = get_uv(uvsensor_pin);
@@ -175,7 +179,7 @@ void setup(){
 
     //check if bootcounter == numreadings
     if (boot_counter == num_readings){
-      Serial.println("Finding average");
+      Serial.println("Finner gjennomsnitt");
       //get average
       //boot_counter = 0;
       
