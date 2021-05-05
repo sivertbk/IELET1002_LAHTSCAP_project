@@ -54,7 +54,7 @@ def plant_setup():
     # Get the plant number that user has chosen in Circus of Things.
     plant_number = str(CoT.plant_number_key2.get()['Value'])
 
-    # If the plant doesn't exist in dictionary, then create a new key attached with default configuration.
+    # If the plant doesn't exist in dictionary, then create a new key attached with default dictionary needed for a plant. 
     if plant_number not in dictionaries:
         dictionaries[plant_number] = new_default_dictionary()
 
@@ -104,7 +104,7 @@ def plant_configuration(plant_number,plant_configuration):
     # Reset save_configuration to tell the user that the configuration has been saved.
     CoT.save_configuration_key2.put(0)
 
-
+    return dictionaries
 
 #### Update plant_dictionary from CoT ####------------------------------------------------------------------------------
 

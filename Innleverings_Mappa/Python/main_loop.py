@@ -27,19 +27,21 @@ while True:
     """
     Main loop of the system
     """
-    # Checks the signals from Circus of Things, to see if user wants to save new configuration or update CoT with chosen plant configuration.
-    new_plant = CoT.new_plant_configuration_key2.get()['Value']
-    save_configuration = CoT.save_configuration_key2.get()['Value']
-
+    # Checks the signals from Circus of Things, to see if user wants to update CoT with chosen plant configuration.
+    new_plant_cot = CoT.new_plant_configuration_key2.get()['Value']
+    
     # Whenever user wants to update Circus of Things (IoT) with configuration value for a chosen plant
     # (or a new configuration will be created if the plant doesn't exist in json file)
-    if (new_plant == 1):
+    if (new_plant_cot == 1):
         plant_dictionary = plant_modules.plant_setup()
+        
+    # Checks the signals from Circus of Things to see if user wants to save new configuration. 
+    save_configuration = CoT.save_configuration_key2.get()['Value']
 
     # Will be true if user wants to save new configuration for a chosen plant.
     if (save_configuration == 1):
         plant_number = str(CoT.plant_number_key2.get()['Value'])
-        plant_modules.plant_configuration(plant_number, plant_dictionary[plant_number])
+        plant_dictionary = plant_modules.plant_configuration(plant_number, plant_dictionary[plant_number])
 
     #### Sensor Values  ####-------------------------------------------------------------------------------------------------
     for plant_name in range(1, 9):
