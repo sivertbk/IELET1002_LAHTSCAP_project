@@ -289,7 +289,7 @@ temp_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{'
                      '5':{'time':time.time(), 'control':False, "stage":0},'6':{'time':time.time(), 'control':False, "stage":0},
                      '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
 
-temp_control_time = 10 # seconds
+temp_wait_time = 10 # seconds
 def check_temperature(plant_dictionary, plant_name):
     """
 
@@ -299,19 +299,21 @@ def check_temperature(plant_dictionary, plant_name):
     # Created and stored everytime function is run
     current_time = time.time()
     
-    # Get following values: The value stored in CoT, the thresholds value stored in dictionary from user input.
+    # Get following values: The value stored in CoT, the thresholds value stored in dictionary from user input
     temp_value = plant_dictionary[str(plant_name)]['temperature_value']
     temp_maximum_threshold = plant_dictionary[str(plant_name)]['temperature_maximum']
     temp_minimum_threshold = plant_dictionary[str(plant_name)]['temperature_minimum']
-
+    
+    # Status of control mode & how long it's been in control time. 
+    temp_control_time = temp_time_tracker[str(plant_name)]['time']
+    temp_control_mode = temp_time_tracker[str(plant_name)]['control']
 
 
     # If sensor value is over threshold
     if temp_value > temp_maximum_threshold:
             
         # If the time has passed more than chosen time AND we're in control mode (means we've run it once before).
-        if((current_time - temp_time_tracker[str(plant_name)]['time'] > temp_control_time) 
-           and (temp_time_tracker[str(plant_name)]['control'] == True)):
+        if((current_time - temp_control_time > temp_wait_time) and (temp_control_mode == True)):
             
             #Reset control mode
             temp_time_tracker[str(plant_name)]['control'] = False
@@ -341,13 +343,11 @@ def check_temperature(plant_dictionary, plant_name):
         plant_dictionary[str(plant_name)]['temperature_state'] = 2
 
 
-
     # If sensor values are lower than threshold value
     elif temp_value < temp_minimum_threshold:
 
         # If the time has passed more than chosen time AND we're in control mode (means we've run it once before).
-        if((current_time - temp_time_tracker[str(plant_name)]['time'] > temp_control_time) 
-           and (temp_time_tracker[str(plant_name)]['control'] == True)):
+        if((current_time - temp_control_time > temp_wait_time) and (temp_control_mode == True)):
             
             #Reset control mode
             temp_time_tracker[str(plant_name)]['control'] = False
@@ -398,7 +398,7 @@ humid_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{
                       '5':{'time':time.time(), 'control':False, "stage":0},'6':{'time':time.time(), 'control':False, "stage":0},
                       '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
 
-humid_control_time = 20 #seconds
+humid_wait_time = 20 #seconds
 
 def check_humidity(plant_dictionary, plant_name):
     """
@@ -411,13 +411,16 @@ def check_humidity(plant_dictionary, plant_name):
     # Get following values: The humid value stored in CoT and the threshold value stored in dictionary from user input.
     humid_threshold = plant_dictionary[str(plant_name)]['humidity_requirement']
     humid_value = plant_dictionary[str(plant_name)]['humidity_value']
-
+    
+    # Status of control mode & how long it's been in control time. 
+    humid_control_time = humid_time_tracker[str(plant_name)]['time']
+    humid_control_mode = humid_time_tracker[str(plant_name)]['control']
+    
     # If humid value is lower than threshold value
     if humid_value < humid_threshold:
         
         # If the time has passed more than chosen time AND we're in control mode (means we've run it once before).
-        if((current_time - humid_time_tracker[str(plant_name)]['time'] > humid_control_time) 
-           and (humid_time_tracker[str(plant_name)]['control'] == True)):
+        if((current_time - humid_control_time > humid_wait_time) and (humid_control_mode == True)):
             
         # Reset the control variable, so we can start a new control check for next time.
             humid_time_tracker[str(plant_name)]['control'] = False
@@ -446,8 +449,6 @@ def check_humidity(plant_dictionary, plant_name):
     else:
         humid_time_tracker[str(plant_name)]['stage'] = 0
         plant_dictionary[str(plant_name)]['humidity_state'] = 0
-    
-    
     
     return plant_dictionary
 
