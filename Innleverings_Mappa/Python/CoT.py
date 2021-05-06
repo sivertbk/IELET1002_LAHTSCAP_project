@@ -172,9 +172,9 @@ def encode_plant_system_states(plant_dictionary, plant_name):
 
 def decode_plant_system_states(plant_name, state = 'default'):
     """
-    This function takes a plant's input states as an array an decodes it to a dictionary of inputs and its state.
-    Second argument takes plant input as keyword and returns state for given plant input. If second argument is ignored,
-    return plants whole dictionary with all input states.
+    This function takes a plant's states as an array an decodes it to a dictionary of the different states.
+    Second argument takes plant state as keyword and returns state value for given plant state. If second argument is ignored,
+    return plant's whole dictionary with all the states.
     """
     # get input state array for plant
     system_state_array = int(plant_state_array_list[int(plant_name)-1].get()['Value'])
