@@ -308,7 +308,6 @@ def check_temperature(plant_dictionary, plant_name):
     temp_control_time = temp_time_tracker[str(plant_name)]['time']
     temp_control_mode = temp_time_tracker[str(plant_name)]['control']
 
-
     # If sensor value is over threshold
     if temp_value > temp_maximum_threshold:
             
@@ -377,14 +376,12 @@ def check_temperature(plant_dictionary, plant_name):
         plant_dictionary[str(plant_name)]['temperature_state'] = 1
 
 
-
     # Otherwise everythings is okay, and we'll return a state saying so.
     else:
         temp_time_tracker[str(plant_name)]['stage'] = 0
         plant_dictionary[str(plant_name)]['temperature_state'] = 0
     
-
-
+    
     return plant_dictionary # Return dictionary with updated state that is going to be added to array sent back to ESP through Circus of Things.
 
 
