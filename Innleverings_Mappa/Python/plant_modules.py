@@ -310,8 +310,10 @@ def check_temperature(plant_dictionary, plant_name):
     if temp_value > temp_maximum_threshold:
             
         # If the time has passed more than chosen time AND we're in control mode (means we've run it once before).
-        if((current_time - temp_time_tracker[str(plant_name)]['time'] > temp_control_time) and (temp_time_tracker[str(plant_name)]['control'] == True)):
+        if((current_time - temp_time_tracker[str(plant_name)]['time'] > temp_control_time) 
+           and (temp_time_tracker[str(plant_name)]['control'] == True)):
             
+            #Reset control mode
             temp_time_tracker[str(plant_name)]['control'] = False
             
             # And change the stages of how many times this if statement has been true.
@@ -324,7 +326,7 @@ def check_temperature(plant_dictionary, plant_name):
             # If it's been true three times, then we want to send an email about it.
             elif temp_time_tracker[str(plant_name)]['stage'] == 2:
                 temp_time_tracker[str(plant_name)]['stage'] = 0
-                #print("email how hot it is")
+                print("email how hot it is")
 
             # If there's a different stage stored, then change it to 1 as it's "first time" following if statement has been true.
             else:
@@ -344,8 +346,10 @@ def check_temperature(plant_dictionary, plant_name):
     elif temp_value < temp_minimum_threshold:
 
         # If the time has passed more than chosen time AND we're in control mode (means we've run it once before).
-        if((current_time - temp_time_tracker[str(plant_name)]['time'] > temp_control_time) and (temp_time_tracker[str(plant_name)]['control'] == True)):
+        if((current_time - temp_time_tracker[str(plant_name)]['time'] > temp_control_time) 
+           and (temp_time_tracker[str(plant_name)]['control'] == True)):
             
+            #Reset control mode
             temp_time_tracker[str(plant_name)]['control'] = False
             
             # Change the stage with how many times this particular if statement has been true
@@ -358,7 +362,7 @@ def check_temperature(plant_dictionary, plant_name):
             # If it's been true three times in row, we reset the stage, and send an email warning.
             elif temp_time_tracker[str(plant_name)]['stage'] == 4:
                 temp_time_tracker[str(plant_name)]['stage'] = 0
-                #print("email how cold it is")
+                print("email how cold it is")
 
             # If a different stage is stored, then it's the first time this statement has been true, and we change stage.
             else:
@@ -407,16 +411,17 @@ def check_humidity(plant_dictionary, plant_name):
     # Get following values: The humid value stored in CoT and the threshold value stored in dictionary from user input.
     humid_threshold = plant_dictionary[str(plant_name)]['humidity_requirement']
     humid_value = plant_dictionary[str(plant_name)]['humidity_value']
-    # If the time has passed more than chosen time AND we're in control mode (means we've run it once before).
-
-
 
     # If humid value is lower than threshold value
     if humid_value < humid_threshold:
-        #print('Air too dry')
-        if((current_time - humid_time_tracker[str(plant_name)]['time'] > humid_control_time) and (humid_time_tracker[str(plant_name)]['control'] == True)):
+        
+        # If the time has passed more than chosen time AND we're in control mode (means we've run it once before).
+        if((current_time - humid_time_tracker[str(plant_name)]['time'] > humid_control_time) 
+           and (humid_time_tracker[str(plant_name)]['control'] == True)):
+            
         # Reset the control variable, so we can start a new control check for next time.
             humid_time_tracker[str(plant_name)]['control'] = False
+            
             # Update the stage variable based on how many times the if-statement has been true.
             if humid_time_tracker[str(plant_name)]['stage'] == 0:
                 humid_time_tracker[str(plant_name)]['stage'] = 1
@@ -427,22 +432,18 @@ def check_humidity(plant_dictionary, plant_name):
             # After three true statements with no changes, then email owner about it.
             elif humid_time_tracker[str(plant_name)]['stage'] == 2:
                 humid_time_tracker[str(plant_name)]['stage'] = 0
-                #print('email about dryness')
+                print('email about dryness')
                 
-            # If we've already compared values, then previous statement is false, and we would like to run a control mode, checking if system should warn the owner about the state.
+        # We would like to run a control mode, checking if system should warn the owner about the state.
         elif humid_time_tracker[str(plant_name)]['control'] == False:
             humid_time_tracker[str(plant_name)]['time'] = time.time()
             humid_time_tracker[str(plant_name)]['control'] = True
-            #print('start humid control')
             
         # Store the state of humidiity regarding current plant environment
         plant_dictionary[str(plant_name)]['humidity_state'] = 1
 
-
-
     # The humidity is good enough
     else:
-        #print('Its good enough')
         humid_time_tracker[str(plant_name)]['stage'] = 0
         plant_dictionary[str(plant_name)]['humidity_state'] = 0
     
@@ -478,7 +479,6 @@ def check_water_tank(plant_dictionary, plant_name):
 
     # Otherwise the tank has enough water for now.
     else:
-        #print('all fine')
         plant_dictionary[str(plant_name)]['water_level_state'] = 0
 
     return plant_dictionary
