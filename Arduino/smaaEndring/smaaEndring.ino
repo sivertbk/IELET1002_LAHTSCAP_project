@@ -1,4 +1,3 @@
-
 // Library
 #include <Adafruit_AHTX0.h>
 #include <CircusESP32Lib.h>
@@ -20,17 +19,15 @@ TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 #define second 1000000         // converts micro seconds to seconds
 #define pump_magnitude 255     // Constant to say how fast the pump should run when it is running (given in 8 bits)
 #define led_brightness 150
-#define Threshold 40 /* Greater the value, more the sensitivity on touchpin*/
+#define Threshold 40           // Greater the value, more the sensitivity on touchpin
 
 // COT Config
-//char ssid[] = "Iprobe"; // Name on SSID sivert's phone
-//char psk[] = "Torpedor"; // Password for SSID siverts's phone
 char ssid[] = "kameraBad2"; // Name on SSID
 char psk[] = "9D2Remember"; // Password for SSID
 char token1[] = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k"; // COT User
 char server[] = "www.circusofthings.com"; // Site communication
 
-// Plant (viktig omm det kobles flere planter på samme rpi)
+// Plant (viktig om det kobles flere planter på samme rpi)
 const int plant = 1;
 
 // COT Keys
@@ -80,11 +77,6 @@ RTC_DATA_ATTR float last_distance_val;
 
 RTC_DATA_ATTR int req_CoT_num = 0;
 RTC_DATA_ATTR int boot_num = 0;
-/*
-char text_color_temp;
-char text_color_soil;
-char text_color_water;
-*/
 
 // State variables
 int water_tank_state;
@@ -106,27 +98,14 @@ int lux_avg;
 int distance_avg;
 
 // Long Variables
-//unsigned long duration;
-//unsigned long time;
-//unsigned long pump_duration;      // Given in ms and determines how long the pump should run
-//unsigned long pump_start = 0;
-//unsigned long wait_start = 0;
-//unsigned long wait_duration = 5000;
 unsigned long oled_start;
-
-// Pump Logic Variables
-//bool pump_active = 0;             // Bool variable that determines if the pump is active or not
-//int pump_strenght = 0;            // Variable to determine how fast the pump should run
-//const int pump_magnitude = 255;   // Constant to say how fast the pump should run when it is running (given in 8 bits)
-
 
 Adafruit_AHTX0 aht;                             // Defines the function used to retrive temp and humi
 DFRobot_VEML7700 veml;                          // Defines the function used to retrive Lux
 CircusESP32Lib circusESP32(server, ssid, psk);  // Defines the function used to communicate to CoT
-//TaskHandle_t Task1;                             // etteller annet RTOS relevant Pål kan det
 
-char wakeup_reason; // variabel for eksternal wakeup
-void callback(){} //callback funksjon for touch interrupt
+char wakeup_reason;                             // variabel for eksternal wakeup
+void callback(){}                               //callback funksjon for touch interrupt
 
 void setup(){
 
@@ -134,7 +113,6 @@ void setup(){
   Serial.begin(115200);
   aht.begin();                    // Starts the function to retreve temp and humid
   veml.begin();                   // Starts the function to retreve Lux value
-  //circusESP32.begin();
   
   // pinModes
   pinMode(soilsensor_pin, INPUT);
@@ -147,31 +125,34 @@ void setup(){
   // OLED initiation
   tft.init();
   tft.fillScreen(TFT_BLACK);
-  tft.setCursor(0, 0, 4);  // Set "cursor" at top left corner of display (0,0) and select font 4
+  tft.setCursor(0, 0, 4);                   // Set "cursor" at top left corner of display (0,0) and select font 4
   tft.setTextColor(TFT_WHITE, TFT_BLACK);  // Set the font colour to be white with a black background
-  // We can now plot text on screen using the "print" class
+                                          // We can now plot text on screen using the "print" class
 
   //Setup interrupt on Touch Pad 3 (GPIO15)
   touchAttachInterrupt(T3, callback, Threshold);
 
   //Configure Touchpad as wakeup source
   wakeup_reason = esp_sleep_get_wakeup_cause();
+  
   //Defining wakeup reasons
   esp_sleep_enable_timer_wakeup(sleep_time*second);
   esp_sleep_enable_touchpad_wakeup();
 
+  // Turns on the LED if it is asked by CoT
+  if (active_status == 1){
+    //ledC Config
+    ledcSetup(led_channel, frequency, resolution);
+    ledcAttachPin(led_pin, led_channel);
+    
+    ledcWrite(led_channel, led_brightness);
+  }
+    
   // Code for mesurement when awakening for sleep
   if(wakeup_reason == ESP_SLEEP_WAKEUP_TIMER){
-    boot_num += 1;
-    if (active_status == 1){
-      //ledC Config
-      ledcSetup(led_channel, frequency, resolution);
-      ledcAttachPin(led_pin, led_channel);
-      ledcWrite(led_channel, led_brightness);
-    }
-    //else if (active_status == 0){}
-    
-    Serial.println("Henter verdier: " + String(boot_counter + 1) + ". av: " + String(num_readings) + ". ganger");
+    boot_num += 1;  //for feilsøking
+
+    Serial.println("Henter verdier: " + String(boot_counter + 1) + ". av: " + String(num_readings) + ". ganger");  //for feilsøking
     // retreaving data
     soil[boot_counter] = get_soil(soilsensor_pin);
     uv[boot_counter] = get_uv(uvsensor_pin);
@@ -187,7 +168,7 @@ void setup(){
     if (boot_counter == num_readings){
       boot_counter = 0;     //resetter bootcounter for ny datasamlingsyklus
       circusESP32.begin();
-      Serial.println("Finner gjennomsnitt");
+      Serial.println("Finner gjennomsnitt");  //for feilsøking
       //get average
       
       soil_avg = find_avg(soil);
@@ -207,15 +188,15 @@ void setup(){
       
       // ###### SEND VERDIER TIL CoT ######
       circusESP32.write(soilsensor_key1, soil_avg, token1);
-      //circusESP32.write(uvsensor_key1, uv_avg, token1);
+      //circusESP32.write(uvsensor_key1, uv_avg, token1);  req_CoT_num += 1;  //for feilsøking
       circusESP32.write(temperature_key1, temperature_avg, token1);
       circusESP32.write(humidity_key1, humidity_avg, token1);
       circusESP32.write(luxsensor_key1, lux_avg, token1);
       circusESP32.write(ultrasonic_key1, distance_avg, token1);
       
-      req_CoT_num += 5;
+      req_CoT_num += 5;  //for feilsøking
 
-      Serial.print("                    skjekker input array for endringer");
+      Serial.print("                    skjekker input array for endringer");    //for feilsøking
       //leser led status og pumpe status
       compiled_states = circusESP32.read(state_array1_key, token1);
       req_CoT_num += 1;
@@ -227,23 +208,23 @@ void setup(){
       led_state = (compiled_states / 1000) % 10;
       pump_state = (compiled_states / 10000) % 10;
 
-      Serial.println(String(compiled_states) + "Led state: " +String(led_state) + "Pump state: " +String(pump_state));
+      Serial.println(String(compiled_states) + "Led state: " +String(led_state) + "Pump state: " +String(pump_state));  //for feilsøking
       if (pump_state != 0){
         //ledC Config
         ledcSetup(pump_channel, frequency, resolution);
         ledcAttachPin(pump_pin, pump_channel);
-        pump(pump_state, pump_channel);
-        pump_state = 0;
+        pump_state = pump(pump_state, pump_channel);
+        //pump_state = 0;
         new_compiled_states = compile_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);
         circusESP32.write(state_array1_key, new_compiled_states, token1);
-        req_CoT_num += 1;
+        req_CoT_num += 1;  //for feilsøking
       }  
       if (led_state == 1){
         //ledC Config
         ledcSetup(led_channel, frequency, resolution);
         ledcAttachPin(led_pin, led_channel);
         active_status = 1;
-        led_activate(led_state, led_channel);
+        led_activate(led_channel);
       }
       else if (led_state != 1){
         active_status = 0;
@@ -255,17 +236,8 @@ void setup(){
   // the pinns for the OLED display are defined in the user.setup file in the espi library
   // ground -> GRN, VCC -> 3V3, SCL -> 18, SDA -> 23, RES -> 4, DC -> 2
   if(wakeup_reason == ESP_SLEEP_WAKEUP_TOUCHPAD){
-    boot_num += 1;
+    boot_num += 1;  //for feilsøking
     //TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
-
-    /*
-    // OLED initiation
-    tft.init();
-    tft.fillScreen(TFT_BLACK);
-    tft.setCursor(0, 0, 4);  // Set "cursor" at top left corner of display (0,0) and select font 4
-    tft.setTextColor(TFT_WHITE, TFT_BLACK);  // Set the font colour to be white with a black background
-    // We can now plot text on screen using the "print" class
-    */
 
     //Setting the OLED to show the last measured values for 10 seconds after the touch pin is activated
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
@@ -310,8 +282,8 @@ void setup(){
     while(oled_start + 10000 > millis()){}//displaying the values for 10 seconds
   }
 
-  Serial.println("Anntall requests sendt til Circus of Things siden ESP ble skrudd på: " + String(req_CoT_num));
-  Serial.println("Anntall ganger ESP har bootet: " + String(boot_num));
+  Serial.println("Anntall requests sendt til Circus of Things siden ESP ble skrudd på: " + String(req_CoT_num));  //for feilsøking
+  Serial.println("Anntall ganger ESP har bootet: " + String(boot_num));  //for feilsøking
   //go back to sleep
   esp_deep_sleep_start();
 }
@@ -320,18 +292,18 @@ void setup(){
 unsigned int compile_states(int water_tank,int humid, int temp, int led, int pump, int plant){
   unsigned int compile = 0;
   compile = water_tank;
-  compile = compile + humid * 10;
-  compile = compile + temp * 100;
-  compile = compile + led * 1000;
-  compile = compile + pump * 10000;
-  compile = compile + plant * 100000;
+  compile += humid * 10;
+  compile += temp * 100;
+  compile += led * 1000;
+  compile += pump * 10000;
+  compile += plant * 100000;
   return compile;
 }
 
 float find_avg(float array[]){
   float sum  = 0;
   for (int i = 0;i < num_readings; i++){
-    //Serial.println(String(i) + ", " + String(array[i]));
+    //Serial.println(String(i) + ", " + String(array[i]));    //for feilsøking
     sum = sum + array[i];
   }
   float avg = sum / num_readings;
@@ -348,7 +320,7 @@ float get_soil(int pin){
 float get_uv(int pin){
   int value = analogRead(pin);                    // denne viser for detmeste 0 men om den får direkte sollys gir den verdier (16.04 kl 14ish ga den 400 ved direkte sollys)
   float percent = map(value,0,611,0,100);     // usikker på nevner verdien, kan være høyere // hyeste målt verdi 1300 20.04 611
-  Serial.print("                UV in %: "); Serial.println(value);
+  Serial.print("                UV in %: "); Serial.println(value);  //for feilsøking
   return percent;
 }
 
@@ -361,8 +333,8 @@ float get_waterlevel(int trig_pin, int echo_pin){    //Ultrasonisk sensor
   delayMicroseconds(10);
   digitalWrite(trig_pin, LOW);
   duration = pulseIn(echo_pin, HIGH);
-  float distance = duration * 0.034 / 2;
-  Serial.print("                Distance: "); Serial.print(distance); Serial.println(" cm");
+  float distance = duration * 0.0343 / 2;
+  Serial.print("                Distance: "); Serial.print(distance); Serial.println(" cm");  //for feilsøking
   //float distance_percent = map(distance,7,22,0,100);      //10L bøtte
   float distance_percent = map(distance,0,8,0,100);         //godteri boks
   distance_percent = 100 - distance_percent;
@@ -374,7 +346,7 @@ float get_lux(){
   float value;
  
   veml.getAutoALSLux(value);
-  Serial.print("                Lux:"); Serial.print(value); Serial.println(" lx");
+  Serial.print("                Lux:"); Serial.print(value); Serial.println(" lx");  //for feilsøking
   return value;
   // har fått lux = 274,000lx (ish) med lys av mobil
 }
@@ -382,7 +354,7 @@ float get_lux(){
 float get_temp(){
   sensors_event_t humidity,temp;
   aht.getEvent(&humidity, &temp);// populate temp objects with fresh data
-  Serial.print("                Temperature: "); Serial.print(temp.temperature); Serial.println(" degrees C");
+  Serial.print("                Temperature: "); Serial.print(temp.temperature); Serial.println(" degrees C");  //for feilsøking
   float value = temp.temperature;
   return value;
 }
@@ -390,13 +362,12 @@ float get_temp(){
 float get_humid(){
   sensors_event_t humidity,temp;
   aht.getEvent(&humidity, &temp);// populate humidity objects with fresh data
-  Serial.print("                Humidity: "); Serial.print(humidity.relative_humidity); Serial.println("% rH");
-
+  Serial.print("                Humidity: "); Serial.print(humidity.relative_humidity); Serial.println("% rH");  //for feilsøking
   float value = humidity.relative_humidity;
   return value;
 }
 
-void pump(int state, int channel){
+int pump(int state, int channel){
   unsigned long duration;
   switch (state){
       case 1:
@@ -419,23 +390,23 @@ void pump(int state, int channel){
         duration = 0;
         break;
   }
-  //Serial.println("                                  HEI HAA");
   state = 0;
   unsigned long start = millis();
   while ((start + duration) > millis()) {
     ledcWrite(channel, pump_magnitude);
   }
   ledcWrite(channel, 0);
+  return state;
 }
 
-void led_activate(int state, int channel){
+void led_activate(int channel){
   Serial.println("led funksjon aktivert");
   for (int i = 50; i < led_brightness; i++){
     ledcWrite(channel, i);
     delay(10);
   }
   ledcWrite(channel, led_brightness);
-  Serial.println("led_state: " + String(state));
+  //Serial.println("led_state: " + String(state));  //for feilsøking
 }
  
 
