@@ -313,7 +313,7 @@ float find_avg(float array[]){
 float get_soil(int pin){
   int value = analogRead(pin);
   float percent = map(value,0,4095,0,100);// finner den prosentvise verdien for jordfuktighet
-  Serial.println(); Serial.print("                Soil Sensor in %: "); Serial.println(value);
+  Serial.println(); Serial.print("                Soil Sensor in %: "); Serial.println(value);  //for feilsøking
   return percent;
 }
 
@@ -400,7 +400,7 @@ int pump(int state, int channel){
 }
 
 void led_activate(int channel){
-  Serial.println("led funksjon aktivert");
+  Serial.println("led funksjon aktivert");  //for feilsøking
   for (int i = 50; i < led_brightness; i++){
     ledcWrite(channel, i);
     delay(10);
