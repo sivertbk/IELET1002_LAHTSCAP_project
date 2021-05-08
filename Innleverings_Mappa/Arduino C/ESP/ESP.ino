@@ -67,9 +67,6 @@ RTC_DATA_ATTR float last_temperature_val;
 RTC_DATA_ATTR float last_lux_val;
 RTC_DATA_ATTR float last_distance_val;
 
-RTC_DATA_ATTR int req_CoT_num = 0;
-RTC_DATA_ATTR int boot_num = 0;
-
 // State variables
 int water_tank_state;
 int humid_state;
@@ -102,7 +99,6 @@ void callback(){}                               // callback function for wakeup 
 void setup(){
 
   //Start communication
-  Serial.begin(115200);
   aht.begin();                    // Starts the function to retreve temp and humid
   veml.begin();                   // Starts the function to retreve Lux value
   
