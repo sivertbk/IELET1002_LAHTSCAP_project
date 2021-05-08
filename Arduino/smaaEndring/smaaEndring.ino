@@ -167,7 +167,6 @@ void setup(){
     //check if bootcounter == numreadings
     if (boot_counter == num_readings){
       boot_counter = 0;     //resetter bootcounter for ny datasamlingsyklus
-      circusESP32.begin();
       Serial.println("Finner gjennomsnitt");  //for feilsøking
       //get average
       
@@ -185,8 +184,10 @@ void setup(){
       last_temperature_val = temperature_avg;
       last_lux_val = lux_avg;
       last_distance_val = distance_avg;
-      
+
       // ###### SEND VERDIER TIL CoT ######
+      circusESP32.begin();
+
       circusESP32.write(soilsensor_key1, soil_avg, token1);
       //circusESP32.write(uvsensor_key1, uv_avg, token1);  req_CoT_num += 1;  //for feilsøking
       circusESP32.write(temperature_key1, temperature_avg, token1);
@@ -302,9 +303,9 @@ unsigned int compile_states(int water_tank,int humid, int temp, int led, int pum
 
 float find_avg(float array[]){
   float sum  = 0;
-  for (int i = 0;i < num_readings; i++){
+  for (int i = 0; i < num_readings; i++){
     //Serial.println(String(i) + ", " + String(array[i]));    //for feilsøking
-    sum = sum + array[i];
+    sum += array[i];
   }
   float avg = sum / num_readings;
   return avg;
