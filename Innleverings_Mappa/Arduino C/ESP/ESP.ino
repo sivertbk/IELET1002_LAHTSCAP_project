@@ -127,7 +127,7 @@ void setup(){
   esp_sleep_enable_timer_wakeup(sleep_time*second);
   esp_sleep_enable_touchpad_wakeup();
 
-  // Turns on the LED
+  // Turns on the LED when ESP32 wakes up from sleep if the LED was on inn a previous boot
   if (active_status == 1){
     //ledC Config
     ledcSetup(led_channel, frequency, resolution);
@@ -136,9 +136,10 @@ void setup(){
     ledcWrite(led_channel, led_brightness);
   }
     
-  // Code for mesurement when awakening for sleep
+  // Will be true if the ESP is awaken form timer
   if(wakeup_reason == ESP_SLEEP_WAKEUP_TIMER){
 
+    // Populates the value arrays with fresh mesurements
     soil[boot_counter] = get_soil(soilsensor_pin);
     uv[boot_counter] = get_uv(uvsensor_pin);
     distance[boot_counter] = get_waterlevel(trigger_pin,echo_pin);
@@ -146,13 +147,14 @@ void setup(){
     temperature[boot_counter] = get_temp();
     humidity[boot_counter] = get_humid();
 
-    //bootcounter update
+    // Bootcounter update
     boot_counter++;
 
-    //check if bootcounter == numreadings
+    // Check if the desired amounts of boots has been reached and then starts to find the average of the values and communicates to CoT
     if (boot_counter == num_readings){
-      boot_counter = 0;     //resets the boot vounter for new data collection
+      boot_counter = 0;     //resets the boot counter for new data collection
       
+      // Finds average of all the values collected
       soil_avg = find_avg(soil);
       uv_avg = find_avg(uv);
       distance_avg = find_avg(distance);
@@ -188,21 +190,26 @@ void setup(){
       led_state = (compiled_states / 1000) % 10;
       pump_state = (compiled_states / 10000) % 10;
 
+      // Checks if the pump state is anything other than 0 and then initiates watering of the plant  
       if (pump_state != 0){
         //ledC Config
         ledcSetup(pump_channel, frequency, resolution);
         ledcAttachPin(pump_pin, pump_channel);
-        pump_state = pump(pump_state, pump_channel);
-        new_compiled_states = compile_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);
-        circusESP32.write(state_array1_key, new_compiled_states, token1);
+
+        pump_state = pump(pump_state, pump_channel);  // Calls on function that finds details of desired watering
+        new_compiled_states = compile_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);  // Compiling states, making themm ready for sending to CoT
+        circusESP32.write(state_array1_key, new_compiled_states, token1);  // Sending the compiled states to CoT to confirm thet the watering of the plant has been executed
       }  
+
+      // Checks if the plant needs light if yes  it initiates lighting of the plant
       if (led_state == 1){
         //ledC Config
         ledcSetup(led_channel, frequency, resolution);
         ledcAttachPin(led_pin, led_channel);
-        active_status = 1;
-        led_activate(led_channel);
+        active_status = 1;  // This variable is to tell the ESP to turn on light at every boot if CoT determines so.
+        led_activate(led_channel);  // Function to turn on the LED light
       }
+      // Makes sure that the lighting at every boot stops if the plant does not need any more light
       else if (led_state != 1){
         active_status = 0;
       }
@@ -255,11 +262,11 @@ void setup(){
     while(oled_start + 10000 > millis()){}    //displaying the values for 10 seconds
   }
 
-  //go back to sleep
+  // Makes the ESP go back to sleep
   esp_deep_sleep_start();
 }
 
-
+// Compiles all the values taken as arguments to a array ready to send to CoT
 unsigned int compile_states(int water_tank,int humid, int temp, int led, int pump, int plant){
   unsigned int compile = 0;
   compile = water_tank;
@@ -271,50 +278,56 @@ unsigned int compile_states(int water_tank,int humid, int temp, int led, int pum
   return compile;
 }
 
+// Finds the average of the array given as argument 
 float find_avg(float array[]){
-  float sum  = 0;
-  for (int i = 0; i < num_readings; i++){
-    sum += array[i];
+  float sum  = 0;  // Sets the sum as 0 
+  for (int i = 0; i < num_readings; i++){  // Uses a for loop to iterate througt all values in the array
+    sum += array[i]; // Adds value to the sum 
   }
-  float avg = sum / num_readings;
+  float avg = sum / num_readings;  // Finding average
   return avg;
 }
 
+// Finds the percent of soilmoisture in the soil
 float get_soil(int pin){
   int value = analogRead(pin);
   float percent = map(value,0,4095,0,100);  // Finding the value in percent
   return percent;
 }
 
+// Finds the percent of uv light shining on the plant
 float get_uv(int pin){
   int value = analogRead(pin);
   float percent = map(value,0,611,0,100);
   return percent;
 }
 
+// Finds the waterlevel in the watermagazine
 float get_waterlevel(int trig_pin, int echo_pin){
-  unsigned long duration;
-  digitalWrite(trig_pin, LOW);
-  delayMicroseconds(2);
+  unsigned long duration;  
+  digitalWrite(trig_pin, LOW);  // Making sure the triggerpin is low
+  delayMicroseconds(2);  // Sets a delay of 2 microseconds to make sure that there are no remaining soundwaves in the watermagazine
 
-  digitalWrite(trig_pin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trig_pin, LOW);
-  duration = pulseIn(echo_pin, HIGH);
-  float distance = duration * 0.0343 / 2;
-  //float distance_percent = map(distance,7,22,0,100);      //10L bucket
-  float distance_percent = map(distance,0,8,0,100);         //Candy box
-  distance_percent = 100 - distance_percent;
+  digitalWrite(trig_pin, HIGH);  // Makes sound to mesure
+  delayMicroseconds(10);  // Sets a delay of 10 microseconds to make sure that there are soundwaves to collect
+  digitalWrite(trig_pin, LOW);  // Stops playing sound form triggerpin
+  duration = pulseIn(echo_pin, HIGH);  // Mesures the duration it took the sound to travel from the sensor to the water and back
+  float distance = duration * 0.0343 / 2;  // Fnds the distance based on the time
+  //float distance_percent = map(distance,7,22,0,100);      // 10L bucket not currently in use
+  float distance_percent = map(distance,0,8,0,100);         // Candy box currently in use
+  distance_percent = 100 - distance_percent;                // Converts the percent for percent empty yo percent full
 
   return distance_percent;
 }
 
+// Finds the amount of light the plant is receaving
 float get_lux(){
   float value;
   veml.getAutoALSLux(value);
   return value;
 }
 
+// Finds the temperature around the plant
 float get_temp(){
   sensors_event_t humidity,temp;
   aht.getEvent(&humidity, &temp);  // populate temp objects with fresh data
@@ -322,6 +335,7 @@ float get_temp(){
   return value;
 }
 
+// Finds the room humidity around the plant
 float get_humid(){
   sensors_event_t humidity,temp;
   aht.getEvent(&humidity, &temp);  // populate humidity objects with fresh data
@@ -329,9 +343,10 @@ float get_humid(){
   return value;
 }
 
-int pump(int state, int channel){
+// Function that controlls the  pumping of water to the plant
+int pump(int state, int channel){  // Takes the pump state and the PWM channel the pump is connected to as arguments
   unsigned long duration;
-  switch (state){
+  switch (state){  // Switch case to find out how long the ESP should water the plant
       case 1:
         duration = 1000;
         break;
@@ -352,21 +367,22 @@ int pump(int state, int channel){
         duration = 0;
         break;
   }
-  state = 0;
-  unsigned long start = millis();
-  while ((start + duration) > millis()) {
+  state = 0;  // Sets the state to 0 to say that the watering has been executed
+  unsigned long start = millis();  // Sets a timestamp to mesure time
+  while ((start + duration) > millis()) {  //while loop that is true for a duration
     ledcWrite(channel, pump_magnitude);
   }
-  ledcWrite(channel, 0);
+  ledcWrite(channel, 0);  // Turns the pump of
   return state;
 }
 
+// Function to activete the led when the led state is  collected for CoT
 void led_activate(int channel){
-  for (int i = 50; i < led_brightness; i++){
+  for (int i = 50; i < led_brightness; i++){  // For loop that makes the LED turn on gradualy and not instant
     ledcWrite(channel, i);
     delay(10);
   }
-  ledcWrite(channel, led_brightness);
+  ledcWrite(channel, led_brightness); // Sets the led to be a predefined brightness
 }
  
 
