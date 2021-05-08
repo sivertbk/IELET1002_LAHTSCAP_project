@@ -16,7 +16,6 @@ import json
 from datetime import datetime
 import time
 
-
 # ----------------------------------------------------------------------------------------------------------------------
 
 # First time python is run (If a reboot happens)

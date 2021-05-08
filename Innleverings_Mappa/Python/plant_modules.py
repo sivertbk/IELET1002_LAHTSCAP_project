@@ -387,7 +387,8 @@ def check_temperature(plant_dictionary, plant_name):
 
 #### Relative humidity sensor check ####--------------------------------------------------------------------------------
 """
-A dictionary where time will be stored, if it's control checking up against time, and which stage we are in.
+A dictionary that represent "control mode" for our function. 'control' tells us if the control mode is active or not, 
+while 'time' tells us when it's been activated, and 'stage' tells us about how many times a if-statement has been true. 
 """
 
 humid_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{'time':time.time(), 'control':False, "stage":0},
@@ -395,6 +396,7 @@ humid_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{
                       '5':{'time':time.time(), 'control':False, "stage":0},'6':{'time':time.time(), 'control':False, "stage":0},
                       '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
 
+# How long control mode should be activated, before we change a stage. 
 humid_wait_time = 20 #seconds
 
 def check_humidity(plant_dictionary, plant_name):
@@ -442,12 +444,12 @@ def check_humidity(plant_dictionary, plant_name):
         # Store the state of humidiity regarding current plant environment
         plant_dictionary[str(plant_name)]['humidity_state'] = 1
 
-    # The humidity is good enough
+    # The humidity is good enough, and we reset stage & store which state humidity is in into dictionary. 
     else:
         humid_time_tracker[str(plant_name)]['stage'] = 0
         plant_dictionary[str(plant_name)]['humidity_state'] = 0
     
-    return plant_dictionary
+    return plant_dictionary # Return the changes that has been made to dictionary. 
 
 
 #### Ultrasonic sensor/water level check ####---------------------------------------------------------------------------
