@@ -1,4 +1,9 @@
+/*
+     ####################  List of needed data to be able to run our code  ##########################
+*/
+
 // Library
+
 #include <Adafruit_AHTX0.h>
 #include <CircusESP32Lib.h>
 #include <DFRobot_VEML7700.h>
@@ -44,7 +49,7 @@ const int led_pin = 14;
 // PWM constants
 const int pump_channel = 5;
 const int led_channel = 6;
-
+// PWM configuration
 const int frequency = 5000;
 const int resolution = 8;
 
@@ -95,6 +100,11 @@ CircusESP32Lib circusESP32(server, ssid, psk);  // Defines the function used to 
 
 char wakeup_reason;                             // variabel for external wakeup
 void callback(){}                               // callback function for wakeup interupt
+
+
+/*
+     ####################  Setup is where the code is being run in  ########################
+*/
 
 void setup(){
 
@@ -265,6 +275,10 @@ void setup(){
   // Makes the ESP go back to sleep
   esp_deep_sleep_start();
 }
+
+/*
+     ##########################    Functions that has been made    ##########################
+*/
 
 // Compiles all the values taken as arguments to a array ready to send to CoT
 unsigned int compile_states(int water_tank,int humid, int temp, int led, int pump, int plant){
