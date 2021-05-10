@@ -92,8 +92,8 @@ int distance_avg;
 
 // Long Variables
 unsigned long oled_start;
-unsigned int compiled_states;
-unsigned int new_compiled_states;
+unsigned int encoded_states;
+unsigned int new_encoded_states;
 
 Adafruit_AHTX0 aht;                             // Defines the function used to retrive temp and humi
 DFRobot_VEML7700 veml;                          // Defines the function used to retrive Lux
@@ -192,14 +192,14 @@ void setup(){
       circusESP32.write(ultrasonic_key1, distance_avg, token1);
 
       // Reads the system states "array" (regarding the state of the plant) from CoT
-      compiled_states = circusESP32.read(state_array1_key, token1);
+      encoded_states = circusESP32.read(state_array1_key, token1);
       
       // Splitting up the system state "array" into individual integers. 
-      water_tank_state = compiled_states % 10;
-      humid_state = (compiled_states / 10) % 10;
-      temp_state = (compiled_states / 100) % 10;
-      led_state = (compiled_states / 1000) % 10;
-      pump_state = (compiled_states / 10000) % 10;
+      water_tank_state = encoded_states % 10;
+      humid_state = (encoded_states / 10) % 10;
+      temp_state = (encoded_states / 100) % 10;
+      led_state = (encoded_states / 1000) % 10;
+      pump_state = (encoded_states / 10000) % 10;
 
       // Checks if the pump state is anything other than 0 and then initiates watering of the plant  
       if (pump_state != 0){
@@ -208,8 +208,8 @@ void setup(){
         ledcAttachPin(pump_pin, pump_channel);
 
         pump_state = pump(pump_state, pump_channel);  // Calls on function that finds details of desired watering
-        new_compiled_states = compile_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);  // Compiling states, making themm ready for sending to CoT
-        circusESP32.write(state_array1_key, new_compiled_states, token1);  // Sending the compiled states to CoT to confirm thet the watering of the plant has been executed
+        new_encoded_states = compile_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);  // Compiling states, making themm ready for sending to CoT
+        circusESP32.write(state_array1_key, new_encoded_states, token1);  // Sending the encoded states to CoT to confirm thet the watering of the plant has been executed
       }  
 
       // Checks if the plant needs light, if true, then it will turn on the plant light. 
