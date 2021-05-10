@@ -1,12 +1,12 @@
 /*
-     ####################  List of needed data to be able to run our code  ##########################
+    ##########################  List of needed data to be able to run our code  ##########################
 */
 
 // Libraries
 #include <Adafruit_AHTX0.h>
 #include <CircusESP32Lib.h>
 #include <DFRobot_VEML7700.h>
-#include <SPI.h>            // library for configuration of OLED display
+#include <SPI.h>            // Library for configuration of OLED display
 #include <TFT_eSPI.h>       // Hardware-specific library
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
@@ -14,14 +14,14 @@ TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 // Defined values
 #define num_readings 12
 #define sleep_time 22
-#define seconds 1000000         // converts micro second to second
-#define pump_magnitude 255     // An constant that tells how fast the pump should be running when it's activated (given in 8 bits)
+#define seconds 1000000         // Converts micro second to second
+#define pump_magnitude 255      // An constant that tells how fast the pump should be running when it's activated (given in 8 bits)
 #define led_brightness 150
-#define Threshold 40           // Higher the value, More sensitive the touchpin will be
+#define Threshold 40            // Higher the value, More sensitive the touchpin will be
 
 // COT Config
-char ssid[] = "kameraBad2"; // Name on SSID
-char psk[] = "9D2Remember"; // Password for SSID
+char ssid[] = "kameraBad2";     // Name on SSID
+char psk[] = "9D2Remember";     // Password for SSID
 char token1[] = "eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI1Nzk0In0.nqXSqXGe2AXcNm4tdMUl7qIzmpAEXwr7UPKf5AtYx4k"; // COT User
 char server[] = "www.circusofthings.com"; // Site communication
 
@@ -44,7 +44,7 @@ const int uvsensor_pin = 33;
 const int echo_pin = 25;
 const int trigger_pin = 26;
 const int pump_pin = 17;
-const int led_pin = 14; // Plant lights
+const int led_pin = 14; // Plant light
 
 // PWM constants
 const int pump_channel = 5;
@@ -104,7 +104,7 @@ void callback(){}                               // callback function for wakeup 
 
 
 /*
-     ####################  Setup is where the code is being run in  ########################
+    ##########################    Setup is where the code is being run in    ##########################
 */
 
 void setup(){
@@ -125,8 +125,8 @@ void setup(){
   tft.init();
   tft.fillScreen(TFT_BLACK);
   tft.setCursor(0, 0, 4);                   // Set "cursor" at top left corner of display (0,0) and select font 4
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);  // Set the font colour to be white with a black background
-                                          // We can now plot text on screen using the "print" class
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);   // Set the font colour to be white with a black background
+                                            // We can now plot text on screen using the "print" class
 
   //Setup interrupt on Touch Pad 3 (GPIO15)
   touchAttachInterrupt(T3, callback, Threshold);
@@ -163,7 +163,7 @@ void setup(){
 
     // Check if the desired amounts of boots has been reached, then it will find the average value of each sensor array and send it to CoT
     if (boot_counter == num_readings){
-      boot_counter = 0;     //resets the boot counter for new data collection
+      boot_counter = 0;                     //resets the boot counter for new data collection
       
       // Finds average of all the values collected
       soil_avg = find_avg(soil);
@@ -207,8 +207,8 @@ void setup(){
         ledcSetup(pump_channel, frequency, resolution);
         ledcAttachPin(pump_pin, pump_channel);
 
-        pump_state = pump(pump_state, pump_channel);  // Calls on function that finds details of desired watering
-        new_encoded_states = compile_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);  // Compiling states, making themm ready for sending to CoT
+        pump_state = pump(pump_state, pump_channel);                      // Calls on function that finds details of desired watering
+        new_encoded_states = encode_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);  // Compiling states, making themm ready for sending to CoT
         circusESP32.write(state_array1_key, new_encoded_states, token1);  // Sending the encoded states to CoT to confirm thet the watering of the plant has been executed
       }  
 
@@ -217,7 +217,7 @@ void setup(){
         //ledC Config
         ledcSetup(led_channel, frequency, resolution);
         ledcAttachPin(led_pin, led_channel);
-        active_status = 1;  // This variable is to tell the ESP to turn on light at every boot if CoT determines so.
+        active_status = 1;          // This variable is to tell the ESP to turn on light at every boot if CoT determines so.
         led_activate(led_channel);  // Function to turn on the LED light
       }
       // Otherwise, turn off the plant light, to make sure it won't be turned on again after each reboot. 
@@ -227,7 +227,7 @@ void setup(){
     } 
   }
  
-  // ###### OLED DISPLAY ######
+  // #############  OLED DISPLAY  #############
   if(wakeup_reason == ESP_SLEEP_WAKEUP_TOUCHPAD){
 
     //Setting the OLED to show the last measured values for 10 seconds after the touch pin is activated
@@ -283,10 +283,10 @@ void setup(){
 }
 
 /*
-     ##########################    Functions that has been made    ##########################
+    ##########################    Functions that has been made    ##########################
 */
 
-unsigned int compile_states(int water_tank,int humid, int temp, int led, int pump, int plant){
+unsigned int encode_states(int water_tank,int humid, int temp, int led, int pump, int plant){
   /* 
    *  A function that compiles all the values taken as arguments to an array, which will be ready to send to CoT
    */
@@ -339,14 +339,14 @@ float get_waterlevel(int trig_pin, int echo_pin){
    * A function that finds the waterlevel in the watermagazine
    */
   unsigned long duration;  
-  digitalWrite(trig_pin, LOW);  // Making sure the triggerpin is low
-  delayMicroseconds(2);  // Sets a delay of 2 microseconds to make sure that there are no remaining soundwaves in the watermagazine
+  digitalWrite(trig_pin, LOW);   // Making sure the triggerpin is low
+  delayMicroseconds(2);          // Sets a delay of 2 microseconds to make sure that there are no remaining soundwaves in the watermagazine
 
   digitalWrite(trig_pin, HIGH);  // Makes sound to measure
-  delayMicroseconds(10);  // Sets a delay of 10 microseconds to make sure that there are soundwaves to collect
-  digitalWrite(trig_pin, LOW);  // Stops playing sound from triggerpin
+  delayMicroseconds(10);         // Sets a delay of 10 microseconds to make sure that there are soundwaves to collect
+  digitalWrite(trig_pin, LOW);   // Stops playing sound from triggerpin
   
-  duration = pulseIn(echo_pin, HIGH);  // Measures the duration it took the sound to travel from the sensor to the water and back
+  duration = pulseIn(echo_pin, HIGH);      // Measures the duration it took the sound to travel from the sensor to the water and back
   float distance = duration * 0.0343 / 2;  // Finds the distance based on the time
   
   //float distance_percent = map(distance,7,22,0,100);      // 10L bucket not currently in use
@@ -372,7 +372,7 @@ float get_temp(){
    * A function that finds the temperature of plants environment
    */
   sensors_event_t humidity,temp;
-  aht.getEvent(&humidity, &temp);  // populate temp objects with fresh data
+  aht.getEvent(&humidity, &temp);  // Populate temp objects with fresh data
   float value = temp.temperature;
   return value;
 }
@@ -383,7 +383,7 @@ float get_humid(){
    * A function that finds the room humidity around the plant
    */
   sensors_event_t humidity,temp;
-  aht.getEvent(&humidity, &temp);  // populate humidity objects with fresh data
+  aht.getEvent(&humidity, &temp);  // Populate humidity objects with fresh data
   float value = humidity.relative_humidity;
   return value;
 }
@@ -416,10 +416,10 @@ int pump(int state, int channel){
         break;
   }
   
-  state = 0;  // Sets the state to 0 to say that the watering has been executed
+  state = 0;                       // Sets the state to 0 to say that the watering has been executed
   unsigned long start = millis();  // Sets a timestamp to measure time
 
-  // while loop that is true for a duration
+  // While loop that is true for a duration
   while ((start + duration) > millis()) { 
     ledcWrite(channel, pump_magnitude);
   }
@@ -437,7 +437,7 @@ void led_activate(int channel){
     ledcWrite(channel, i);
     delay(10);
   }
-  ledcWrite(channel, led_brightness); // Sets the led to be a predefined brightness
+  ledcWrite(channel, led_brightness);          // Sets the led to be a predefined brightness
 }
  
 
