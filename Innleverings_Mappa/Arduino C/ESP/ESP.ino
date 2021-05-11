@@ -63,7 +63,7 @@ RTC_DATA_ATTR float uv[num_readings];
 RTC_DATA_ATTR float humidity[num_readings];
 RTC_DATA_ATTR float temperature[num_readings];
 RTC_DATA_ATTR float lux[num_readings];
-RTC_DATA_ATTR float distance[num_readings];
+RTC_DATA_ATTR float waterlevel[num_readings];
 
 // Variables that store last average sensor values (OLED)
 RTC_DATA_ATTR int last_soil_val;
@@ -71,7 +71,7 @@ RTC_DATA_ATTR int last_uv_val;
 RTC_DATA_ATTR int last_humidity_val;
 RTC_DATA_ATTR int last_temperature_val;
 RTC_DATA_ATTR int last_lux_val;
-RTC_DATA_ATTR int last_distance_val;
+RTC_DATA_ATTR int last_waterlevel_val;
 
 // State variables
 int water_tank_state;
@@ -88,7 +88,7 @@ int uv_avg;
 int humidity_avg;
 int temperature_avg;
 int lux_avg;
-int distance_avg;
+int waterlevel_avg;
 
 // Long Variables
 unsigned long oled_start;
@@ -124,7 +124,7 @@ void setup(){
   //Setup interrupt on Touch Pad 3 (GPIO15)
   touchAttachInterrupt(T3, callback, Threshold);
 
-  //Configure Touchpad as wakeup source
+  //Store the reason ESP woke up through a built-in function
   wakeup_reason = esp_sleep_get_wakeup_cause();
   
   //Defining wakeup reasons
@@ -146,7 +146,7 @@ void setup(){
     // Populates the value arrays with fresh mesurements
     soil[boot_counter] = get_soil(soilsensor_pin);
     uv[boot_counter] = get_uv(uvsensor_pin);
-    distance[boot_counter] = get_waterlevel(trigger_pin,echo_pin);
+    waterlevel[boot_counter] = get_waterlevel(trigger_pin,echo_pin);
     lux[boot_counter] = get_lux();
     temperature[boot_counter] = get_temp();
     humidity[boot_counter] = get_humid();
@@ -162,7 +162,7 @@ void setup(){
       // Finds average of all the values collected
       soil_avg = find_avg(soil);
       uv_avg = find_avg(uv);
-      distance_avg = find_avg(distance);
+      waterlevel_avg = find_avg(waterlevel);
       lux_avg = find_avg(lux);
       temperature_avg = find_avg(temperature);
       humidity_avg = find_avg(humidity);
@@ -173,7 +173,7 @@ void setup(){
       last_humidity_val = humidity_avg;
       last_temperature_val = temperature_avg;
       last_lux_val = lux_avg;
-      last_distance_val = distance_avg;
+      last_waterlevel_val = waterlevel_avg;
 
       // ###### SEND SENSOR VALUES TO CoT ######
       circusESP32.begin();
@@ -183,7 +183,7 @@ void setup(){
       circusESP32.write(temperature_key1, temperature_avg, token1);
       circusESP32.write(humidity_key1, humidity_avg, token1);
       circusESP32.write(luxsensor_key1, lux_avg, token1);
-      circusESP32.write(ultrasonic_key1, distance_avg, token1);
+      circusESP32.write(ultrasonic_key1, waterlevel_avg, token1);
 
       // Reads the system states "array" (regarding the state of the plant) from CoT
       encoded_states = circusESP32.read(state_array1_key, token1);
@@ -262,7 +262,7 @@ void setup(){
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.print("Vannmengde: ");  
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
-    tft.print(last_distance_val);
+    tft.print(last_waterlevel_val);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.println(" %");
 
@@ -371,8 +371,8 @@ float get_lux(){
   /*
    * A function that finds the amount of light the plant is receiving
    */
-  float value;
-  veml.getAutoALSLux(value);
+  float value;                // Define a variable
+  veml.getAutoALSLux(value);  // Use a function that will store lux values to variable. 
   return value;
 }
 
@@ -392,7 +392,7 @@ float get_humid(){
   /*
    * A function that finds the room humidity around the plant
    */
-  sensors_event_t humidity,temp;
+  sensors_event_t humidity,temp;   // Create an object in memory that will hold the results (sensor values)
   aht.getEvent(&humidity, &temp);  // Populate humidity objects with fresh data
   float value = humidity.relative_humidity;
   return value;
