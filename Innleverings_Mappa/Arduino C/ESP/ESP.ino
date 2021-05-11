@@ -203,7 +203,7 @@ void setup(){
 
       // Checks if the pump state is anything other than 0 and then initiates watering of the plant  
       if (pump_state != 0){
-        //ledC Config
+        //ledC Config & attach pin to to PWM channel
         ledcSetup(pump_channel, frequency, resolution);
         ledcAttachPin(pump_pin, pump_channel);
 
@@ -318,7 +318,7 @@ float get_soil(int pin){
   /*
    * A function that finds the percent of soilmoisture in the soil
    */
-  int value = analogRead(pin);
+  int value = analogRead(pin); // Reads the pin value
   float percent = map(value,0,4095,0,100);  // Finding the value in percent
   return percent;
 }
@@ -371,9 +371,9 @@ float get_temp(){
   /*
    * A function that finds the temperature of plants environment
    */
-  sensors_event_t humidity,temp;
+  sensors_event_t humidity,temp;   // Create an object in memory that will hold the results (sensor values)
   aht.getEvent(&humidity, &temp);  // Populate temp objects with fresh data
-  float value = temp.temperature;
+  float value = temp.temperature;  // Store the temperature value to a variable
   return value;
 }
 
@@ -394,7 +394,7 @@ int pump(int state, int channel){
    * Function that controlls how much water should be pumped to the plant
    */
   unsigned long duration;
-  switch (state){  // Switch case to find out how long the ESP should water the plant
+  switch (state){  // Switch case to find out how long the ESP should water the plant (Duration in ms)
       case 1:
         duration = 1000;
         break;
@@ -416,11 +416,12 @@ int pump(int state, int channel){
         break;
   }
   
-  state = 0;                       // Sets the state to 0 to say that the watering has been executed
-  unsigned long start = millis();  // Sets a timestamp to measure time
-
-  // While loop that is true for a duration
-  while ((start + duration) > millis()) { 
+  state = 0;                                      // Sets the state to 0 to say that the watering has been executed
+  unsigned long start = millis();                 // Sets a timestamp to measure time
+  unsigned long ending = start + duration;        // Add the duration time to start to get the timestamp when it should end. 
+  
+  // It'll pump water to plant till current millis() is past ending timestamp. Then it'll stop. 
+  while ((ending) > millis()) { 
     ledcWrite(channel, pump_magnitude);
   }
   
