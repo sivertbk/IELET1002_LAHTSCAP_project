@@ -120,14 +120,7 @@ void setup(){
   pinMode(trigger_pin, OUTPUT);
   pinMode(pump_pin, OUTPUT);
   pinMode(led_pin, OUTPUT);
-
-  // OLED initiation
-  tft.init();
-  tft.fillScreen(TFT_BLACK);
-  tft.setCursor(0, 0, 4);                   // Set "cursor" at top left corner of display (0,0) and select font 4
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);   // Set the font colour to be white with a black background
-                                            // We can now plot text on screen using the "print" class
-
+  
   //Setup interrupt on Touch Pad 3 (GPIO15)
   touchAttachInterrupt(T3, callback, Threshold);
 
@@ -238,6 +231,13 @@ void setup(){
   // If ESP was waken up by touch instead of timer, then print out last taken average measurement. 
   if(wakeup_reason == ESP_SLEEP_WAKEUP_TOUCHPAD){
 
+    // OLED initiation
+    tft.init();
+    tft.fillScreen(TFT_BLACK);
+    tft.setCursor(0, 0, 4);                   // Set "cursor" at top left corner of display (0,0) and select font 4
+    tft.setTextColor(TFT_WHITE, TFT_BLACK);   // Set the font colour to be white with a black background
+                                            // We can now plot text on screen using the "print" class
+                                            
     //Setting the OLED to show the last measured values for 10 seconds after the touch pin is activated
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.println("Verdier");  
