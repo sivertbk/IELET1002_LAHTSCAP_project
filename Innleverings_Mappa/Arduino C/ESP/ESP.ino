@@ -161,7 +161,8 @@ void setup(){
     // Bootcounter update
     boot_counter++;
 
-    // Check if the desired amounts of boots has been reached, then it will find the average value of each sensor array and send it to CoT
+    // Check if the desired amounts of boots has been reached, 
+    // then it will find the average value of each sensor array and send it to CoT.
     if (boot_counter == num_readings){
       boot_counter = 0;                     // Resets the boot counter for new data collection
       
@@ -207,9 +208,14 @@ void setup(){
         ledcSetup(pump_channel, frequency, resolution);
         ledcAttachPin(pump_pin, pump_channel);
 
-        pump_state = pump(pump_state, pump_channel);                      // Calls on function that finds details of desired watering
-        new_encoded_states = encode_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant);  // Compiling states, making themm ready for sending to CoT
-        circusESP32.write(state_array1_key, new_encoded_states, token1);  // Sending the encoded states to CoT to confirm thet the watering of the plant has been executed
+        // Calls on function that finds details of desired watering
+        pump_state = pump(pump_state, pump_channel);  
+         
+        // Compiling states, making themm ready for sending to CoT                   
+        new_encoded_states = encode_states(water_tank_state, humid_state, temp_state, led_state, pump_state, plant); 
+
+        // Sending the encoded states to CoT to confirm thet the watering of the plant has been executed
+        circusESP32.write(state_array1_key, new_encoded_states, token1);  
       }  
 
       // Checks if the plant needs light, if true, then it will turn on the plant light. 
@@ -341,14 +347,16 @@ float get_waterlevel(int trig_pin, int echo_pin){
    * A function that finds the waterlevel in the watermagazine
    */
   unsigned long duration;  
-  digitalWrite(trig_pin, LOW);   // Making sure the triggerpin is low
-  delayMicroseconds(2);          // Sets a delay of 2 microseconds to make sure that there are no remaining soundwaves in the watermagazine
+  digitalWrite(trig_pin, LOW);   // Making sure the triggerpin is low.
+  delayMicroseconds(2);          // Sets a delay of 2 microseconds to make sure that there are no 
+                                 // remaining soundwaves in the watermagazine.
 
   digitalWrite(trig_pin, HIGH);  // Makes sound to measure
   delayMicroseconds(10);         // Sets a delay of 10 microseconds to make sure that there are soundwaves to collect
   digitalWrite(trig_pin, LOW);   // Stops playing sound from triggerpin
   
-  duration = pulseIn(echo_pin, HIGH);      // Measures the duration it took the sound to travel from the sensor to the water and back
+  duration = pulseIn(echo_pin, HIGH);      // Measures the duration it took for the sound to travel 
+                                           // from the sensor to the water and back.
   float distance = duration * 0.0343 / 2;  // Finds the distance based on the time
   
   //float distance_percent = map(distance,7,22,0,100);      // 10L bucket not currently in use
