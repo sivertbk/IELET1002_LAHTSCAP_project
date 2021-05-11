@@ -444,7 +444,7 @@ void led_activate(int channel){
   /*
    * Function to activate the plant light led when the led state is collected from CoT
    */
-  for (int i = 50; i < led_brightness; i++){     // For loop that makes the LED turn on gradualy and not instant
+  for (int i = 50; i < led_brightness; i++){     // For loop that makes the LED turn on gradually and not instant
     ledcWrite(channel, i);
     delay(10);
   }
