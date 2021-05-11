@@ -66,12 +66,12 @@ RTC_DATA_ATTR float lux[num_readings];
 RTC_DATA_ATTR float distance[num_readings];
 
 // Variables that store last average sensor values (OLED)
-RTC_DATA_ATTR float last_soil_val;
-RTC_DATA_ATTR float last_uv_val;
-RTC_DATA_ATTR float last_humidity_val;
-RTC_DATA_ATTR float last_temperature_val;
-RTC_DATA_ATTR float last_lux_val;
-RTC_DATA_ATTR float last_distance_val;
+RTC_DATA_ATTR int last_soil_val;
+RTC_DATA_ATTR int last_uv_val;
+RTC_DATA_ATTR int last_humidity_val;
+RTC_DATA_ATTR int last_temperature_val;
+RTC_DATA_ATTR int last_lux_val;
+RTC_DATA_ATTR int last_distance_val;
 
 // State variables
 int water_tank_state;
@@ -246,7 +246,7 @@ void setup(){
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.print("Temperatur: ");  
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
-    tft.print(int(last_temperature_val));
+    tft.print(last_temperature_val);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.println(" C");
 
@@ -254,7 +254,7 @@ void setup(){
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.print("Soilsensor: ");  
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
-    tft.print(int(last_soil_val));
+    tft.print(last_soil_val);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.println(" %");
 
@@ -262,7 +262,7 @@ void setup(){
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.print("Vannmengde: ");  
     tft.setTextColor(TFT_GREEN, TFT_BLACK);
-    tft.print(int(last_distance_val));
+    tft.print(last_distance_val);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.println(" %");
 
@@ -270,7 +270,7 @@ void setup(){
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.print("Lys: ");  
     tft.setTextColor(TFT_BLUE, TFT_BLACK);
-    tft.print(int(last_lux_val));
+    tft.print(last_lux_val);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.println(" Lux");
 
@@ -278,7 +278,7 @@ void setup(){
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.print("Fuktighet: ");  
     tft.setTextColor(TFT_BLUE, TFT_BLACK);
-    tft.print(int(last_humidity_val));
+    tft.print(last_humidity_val);
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.println(" %rH");
 
