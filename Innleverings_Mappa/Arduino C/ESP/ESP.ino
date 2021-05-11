@@ -7,7 +7,7 @@
 #include <CircusESP32Lib.h>    // Library for communication to Circus of Things
 #include <DFRobot_VEML7700.h>  // Library for Lux sensor
 #include <SPI.h>               // Library for configuration of OLED display
-#include <TFT_eSPI.h>          // Hardware-specific library
+#include <TFT_eSPI.h>          // OLED-hardware-specific library
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 
@@ -163,7 +163,7 @@ void setup(){
 
     // Check if the desired amounts of boots has been reached, then it will find the average value of each sensor array and send it to CoT
     if (boot_counter == num_readings){
-      boot_counter = 0;                     //resets the boot counter for new data collection
+      boot_counter = 0;                     // Resets the boot counter for new data collection
       
       // Finds average of all the values collected
       soil_avg = find_avg(soil);
@@ -275,7 +275,7 @@ void setup(){
     tft.println(" %rH");
 
     oled_start = millis(); 
-    while(oled_start + 10000 > millis()){}    //displaying the values for 10 seconds
+    while(oled_start + 10000 > millis()){}    // Displaying the values for 10 seconds
   }
 
   // Makes the ESP go back to sleep
@@ -305,11 +305,11 @@ float find_avg(float array[]){
   /* 
    * A function that finds the average of the sensor array given as argument 
    */
-  float sum  = 0;  // Sets the sum as 0 
+  float sum  = 0;                          // Sets the sum as 0 
   for (int i = 0; i < num_readings; i++){  // Uses a for loop to iterate througt all values in the array
-    sum += array[i]; // Adds value to the sum 
+    sum += array[i];                       // Adds value to the sum 
   }
-  float avg = sum / num_readings;  // Finding average
+  float avg = sum / num_readings;          // Finding average
   return avg;
 }
 
@@ -318,7 +318,7 @@ float get_soil(int pin){
   /*
    * A function that finds the percent of soilmoisture in the soil
    */
-  int value = analogRead(pin); // Reads the pin value
+  int value = analogRead(pin);              // Reads the pin value
   float percent = map(value,0,4095,0,100);  // Finding the value in percent
   return percent;
 }
@@ -425,7 +425,7 @@ int pump(int state, int channel){
     ledcWrite(channel, pump_magnitude);
   }
   
-  ledcWrite(channel, 0);  // Turns off the pump
+  ledcWrite(channel, 0);                          // Turns off the pump
   return state;
 }
 
@@ -434,11 +434,11 @@ void led_activate(int channel){
   /*
    * Function to activate the plant light led when the led state is collected from CoT
    */
-  for (int i = 50; i < led_brightness; i++){  // For loop that makes the LED turn on gradualy and not instant
+  for (int i = 50; i < led_brightness; i++){     // For loop that makes the LED turn on gradualy and not instant
     ledcWrite(channel, i);
     delay(10);
   }
-  ledcWrite(channel, led_brightness);          // Sets the led to be a predefined brightness
+  ledcWrite(channel, led_brightness);            // Sets the led to be a predefined brightness
 }
  
 
