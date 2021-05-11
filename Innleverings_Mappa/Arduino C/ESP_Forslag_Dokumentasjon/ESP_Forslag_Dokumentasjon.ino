@@ -3,11 +3,11 @@
 */
 
 // Libraries
-#include <Adafruit_AHTX0.h>
-#include <CircusESP32Lib.h>
-#include <DFRobot_VEML7700.h>
-#include <SPI.h>            // Library for configuration of OLED display
-#include <TFT_eSPI.h>       // Hardware-specific library
+#include <Adafruit_AHTX0.h>    // Library for Temperature/Humidity sensor
+#include <CircusESP32Lib.h>    // Library for communication to Circus of Things
+#include <DFRobot_VEML7700.h>  // Library for Lux sensor
+#include <SPI.h>               // Library for configuration of OLED display
+#include <TFT_eSPI.h>          // Hardware-specific library
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 
