@@ -79,7 +79,7 @@ int humid_state;
 int temp_state;
 int pump_state;
 int led_state;
-RTC_DATA_ATTR bool active_status = 0; 
+RTC_DATA_ATTR bool led_active_status = 0; 
 
 
 // Variables that has the average of our measurements, which will then be sent to CoT
@@ -132,7 +132,7 @@ void setup(){
   esp_sleep_enable_touchpad_wakeup();
 
   // If the plant lights was on in the previous boot, then turn it on again. 
-  if (active_status == 1){
+  if (led_active_status == 1){
     //ledC Config
     ledcSetup(led_channel, frequency, resolution);
     ledcAttachPin(led_pin, led_channel);
@@ -217,12 +217,12 @@ void setup(){
         ledcSetup(led_channel, frequency, resolution);
         ledcAttachPin(led_pin, led_channel);
         
-        active_status = 1;          // This variable is to tell the ESP to turn on light at every boot if CoT determines so.
+        led_active_status = 1;          // This variable is to tell the ESP to turn on light at every boot if CoT determines so.
         led_activate(led_channel);  // Function to turn on the LED light
       }
       // Otherwise, turn off the plant light, to make sure it won't be turned on again after each reboot. 
       else if (led_state != 1){
-        active_status = 0;
+        led_active_status = 0;
       }
     } 
   }
