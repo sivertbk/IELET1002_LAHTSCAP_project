@@ -203,7 +203,7 @@ void setup(){
 
       // Checks if the pump state is anything other than 0 and then initiates watering of the plant  
       if (pump_state != 0){
-        //ledC Config & attach pin to to PWM channel
+        //ledC Config & attach pin to PWM channel
         ledcSetup(pump_channel, frequency, resolution);
         ledcAttachPin(pump_pin, pump_channel);
 
@@ -214,9 +214,10 @@ void setup(){
 
       // Checks if the plant needs light, if true, then it will turn on the plant light. 
       if (led_state == 1){
-        //ledC Config
+        //ledC Config & attach pin to PWM channel
         ledcSetup(led_channel, frequency, resolution);
         ledcAttachPin(led_pin, led_channel);
+        
         active_status = 1;          // This variable is to tell the ESP to turn on light at every boot if CoT determines so.
         led_activate(led_channel);  // Function to turn on the LED light
       }
@@ -228,6 +229,7 @@ void setup(){
   }
  
   // #############  OLED DISPLAY  #############
+  // If ESP was waken up by touch instead of timer, then print out last taken average measurement. 
   if(wakeup_reason == ESP_SLEEP_WAKEUP_TOUCHPAD){
 
     //Setting the OLED to show the last measured values for 10 seconds after the touch pin is activated
@@ -421,7 +423,7 @@ int pump(int state, int channel){
   unsigned long ending = start + duration;        // Add the duration time to start to get the timestamp when it should end. 
   
   // It'll pump water to plant till current millis() is past ending timestamp. Then it'll stop. 
-  while ((ending) > millis()) { 
+  while (ending > millis()) { 
     ledcWrite(channel, pump_magnitude);
   }
   
