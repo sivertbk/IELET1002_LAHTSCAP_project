@@ -227,7 +227,7 @@ void setup(){
     } 
   }
  
-  // #############  LCD DISPLAY  #############
+  // #############  LCD-DISPLAY  #############
   // If ESP was waken up by touch instead of timer, then print out last taken average measurement. 
   if(wakeup_reason == ESP_SLEEP_WAKEUP_TOUCHPAD){
 
