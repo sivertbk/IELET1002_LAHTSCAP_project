@@ -6,8 +6,8 @@
 #include <Adafruit_AHTX0.h>    // Library for Temperature/Humidity sensor
 #include <CircusESP32Lib.h>    // Library for communication to Circus of Things
 #include <DFRobot_VEML7700.h>  // Library for Lux sensor
-#include <SPI.h>               // Library for configuration of OLED display
-#include <TFT_eSPI.h>          // OLED-hardware-specific library
+#include <SPI.h>               // Library for configuration of LCD display
+#include <TFT_eSPI.h>          // LCD-hardware-specific library
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
 
@@ -65,7 +65,7 @@ RTC_DATA_ATTR float temperature[num_readings];
 RTC_DATA_ATTR float lux[num_readings];
 RTC_DATA_ATTR float waterlevel[num_readings];
 
-// Variables that store last average sensor values (OLED)
+// Variables that store last average sensor values (LCD)
 RTC_DATA_ATTR int last_soil_val;
 RTC_DATA_ATTR int last_uv_val;
 RTC_DATA_ATTR int last_humidity_val;
@@ -91,7 +91,7 @@ int lux_avg;
 int waterlevel_avg;
 
 // Long Variables
-unsigned long oled_start;
+unsigned long lcd_start;
 unsigned int recent_plant_states;
 unsigned int updated_plant_states;
 
@@ -167,7 +167,7 @@ void setup(){
       temperature_avg = find_avg(temperature);
       humidity_avg = find_avg(humidity);
 
-      // Remembering the values for OLED
+      // Remembering the values for LCD
       last_soil_val = soil_avg;
       last_uv_val = uv_avg;
       last_humidity_val = humidity_avg;
@@ -227,18 +227,18 @@ void setup(){
     } 
   }
  
-  // #############  OLED DISPLAY  #############
+  // #############  LCD DISPLAY  #############
   // If ESP was waken up by touch instead of timer, then print out last taken average measurement. 
   if(wakeup_reason == ESP_SLEEP_WAKEUP_TOUCHPAD){
 
-    // OLED initiation
+    // LCD initiation
     tft.init();
     tft.fillScreen(TFT_BLACK);
     tft.setCursor(0, 0, 4);                   // Set "cursor" at top left corner of display (0,0) and select font 4
     tft.setTextColor(TFT_WHITE, TFT_BLACK);   // Set the font colour to be white with a black background
                                             // We can now plot text on screen using the "print" class
                                             
-    //Setting the OLED to show the last measured values for 10 seconds after the touch pin is activated
+    //Setting the LCD to show the last measured values for 10 seconds after the touch pin is activated
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.println("Verdier");  
 
@@ -282,8 +282,8 @@ void setup(){
     tft.setTextColor(TFT_WHITE, TFT_BLACK);
     tft.println(" %rH");
 
-    oled_start = millis(); 
-    while(oled_start + 10000 > millis()){}    // Displaying the values for 10 seconds
+    lcd_start = millis(); 
+    while(lcd_start + 10000 > millis()){}    // Displaying the values for 10 seconds
   }
 
   // Makes the ESP go back to sleep
