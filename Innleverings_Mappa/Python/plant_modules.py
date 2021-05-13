@@ -133,8 +133,8 @@ def update_plant_sensor_values_v2(plant_dictionary, plant_name):
     Only checks water tank once a day and after pump have been shut off.
     """
     
-    current_time = int(time.time()) # current time in epoch
-    now = datetime.now() # current time in datetime
+    current_time = int(time.time()) # Current time in epoch
+    now = datetime.now() # Current time in datetime (local)
     last_water = plant_dictionary[str(plant_name)]['last_water']
 
     plant_dictionary[str(plant_name)]['soil_value'] = CoT.soil_value_key_list[plant_name - 1].get()['Value']
@@ -142,11 +142,11 @@ def update_plant_sensor_values_v2(plant_dictionary, plant_name):
     plant_dictionary[str(plant_name)]['temperature_value'] = CoT.temp_value_key_list[plant_name - 1].get()['Value']
     plant_dictionary[str(plant_name)]['humidity_value'] = CoT.humid_value_key_list[plant_name - 1].get()['Value']
 
-    # we request water tank level 5 minutes after pump has been shut off for 5 minutes.
+    # We request water tank level 5 minutes after pump has been shut off for 5 minutes.
     if ((current_time - last_water) > 300) and ((current_time - last_water) < 600):
         plant_dictionary[str(plant_name)]['water_level'] = CoT.ultrasonic_value_key_list[plant_name - 1].get()['Value']
 
-    # we request water tank level every day between 12:00 and 12:05.
+    # We request water tank level every day between 12:00 and 12:05.
     elif (now.hour == 12) and (now.minute < 6):
         plant_dictionary[str(plant_name)]['water_level'] = CoT.ultrasonic_value_key_list[plant_name - 1].get()['Value']
 
