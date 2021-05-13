@@ -357,7 +357,7 @@ float get_waterlevel(int trig_pin, int echo_pin){
   
   duration = pulseIn(echo_pin, HIGH);      // Measures the duration it took for the sound to travel 
                                            // from the sensor to the water and back.
-  float distance = duration * 0.0343 / 2;  // Finds the distance based on the time
+  float distance = (duration * 0.5)/ 29.2;  // Finds the distance based on the time
   
   //float distance_percent = map(distance,7,22,0,100);      // 10L bucket not currently in use
   float distance_percent = map(distance,0,8,0,100);         // Candy box currently in use
