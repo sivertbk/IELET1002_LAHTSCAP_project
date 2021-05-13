@@ -26,6 +26,7 @@ def new_default_dictionary():
     This function is used whenever a new plant is created and isn't already stored in dictionary with all
     plant's configuration.
     """
+    
     default = {'plant_number':CoT.plant_number_key2.get()['Value'],
                'active_status':CoT.active_status_key2.get()['Value'],
                'soil_requirement':CoT.soil_requirement_key2.get()['Value'],
@@ -35,6 +36,7 @@ def new_default_dictionary():
                'humidity_requirement':CoT.humidity_requirement_key2.get()['Value'],
                'last_water': int(time.time())
                }
+    
     return default
 
 
@@ -113,6 +115,7 @@ def update_plant_sensor_values(plant_dictionary, plant_name):
     Takes sensor values from sensor signal array
     This function takes the given plant's dictionary and updates sensor values, then returns updated dictionary.
     """
+    
     plant_sensor_dict = CoT.decode_sensor_values(plant_name)
     plant_dictionary[str(plant_name)]['soil_value'] = plant_sensor_dict['soil']
     plant_dictionary[str(plant_name)]['lux_value'] = plant_sensor_dict['lux']
@@ -129,6 +132,7 @@ def update_plant_sensor_values_v2(plant_dictionary, plant_name):
     This function takes the given plant's dictionary and updates sensor values, then returns updated dictionary.
     Only checks water tank once a day and after pump have been shut off.
     """
+    
     current_time = int(time.time()) # current time in epoch
     now = datetime.now() # current time in datetime
     last_water = plant_dictionary[str(plant_name)]['last_water']
@@ -137,12 +141,15 @@ def update_plant_sensor_values_v2(plant_dictionary, plant_name):
     plant_dictionary[str(plant_name)]['lux_value'] = CoT.lux_value_key_list[plant_name - 1].get()['Value']
     plant_dictionary[str(plant_name)]['temperature_value'] = CoT.temp_value_key_list[plant_name - 1].get()['Value']
     plant_dictionary[str(plant_name)]['humidity_value'] = CoT.humid_value_key_list[plant_name - 1].get()['Value']
+
     # we request water tank level 5 minutes after pump has been shut off for 5 minutes.
     if ((current_time - last_water) > 300) and ((current_time - last_water) < 600):
         plant_dictionary[str(plant_name)]['water_level'] = CoT.ultrasonic_value_key_list[plant_name - 1].get()['Value']
+
     # we request water tank level every day between 12:00 and 12:05.
     elif (now.hour == 12) and (now.minute < 6):
         plant_dictionary[str(plant_name)]['water_level'] = CoT.ultrasonic_value_key_list[plant_name - 1].get()['Value']
+
     return plant_dictionary
 
 
@@ -150,12 +157,14 @@ def update_plant_system_states(plant_dictionary, plant_name):
     """
     This function takes the given plant's dictionary and updates system states, then returns updated dictionary.
     """
+    
     plant_state_dict = CoT.decode_plant_system_states(plant_name)
     plant_dictionary[str(plant_name)]['pump_state'] = plant_state_dict['pump_state']
     plant_dictionary[str(plant_name)]['light_state'] = plant_state_dict['light_state']
     plant_dictionary[str(plant_name)]['temperature_state'] = plant_state_dict['temp_state']
     plant_dictionary[str(plant_name)]['humidity_state'] = plant_state_dict['humid_state']
     plant_dictionary[str(plant_name)]['water_level_state'] = plant_state_dict['water_level_state']
+    
     return plant_dictionary
 
 
@@ -240,6 +249,7 @@ def check_lux(plant_dictionary, plant_name):
     Function which takes the plant name as an argument and checks if the plant need more light or not.
     When the plant need light it changes the plants light status to True(1)
     """
+    
     # Setting up variables
     now = datetime.now() # current time in datetime
     current_time = int(time.time()) # current time in epoch
@@ -284,12 +294,14 @@ def check_lux(plant_dictionary, plant_name):
 """
 A dictionary where time will be stored, if it's control checking up against time, and which stage we are in.
 """
+
 temp_time_tracker = {'1':{'time':time.time(), 'control':False, "stage":0},'2':{'time':time.time(), 'control':False, "stage":0},
                      '3':{'time':time.time(), 'control':False, "stage":0},'4':{'time':time.time(), 'control':False, "stage":0},
                      '5':{'time':time.time(), 'control':False, "stage":0},'6':{'time':time.time(), 'control':False, "stage":0},
                      '7':{'time':time.time(), 'control':False, "stage":0},'8':{'time':time.time(), 'control':False, "stage":0}}
 
 temp_wait_time = 10 # seconds
+
 def check_temperature(plant_dictionary, plant_name):
     """
 

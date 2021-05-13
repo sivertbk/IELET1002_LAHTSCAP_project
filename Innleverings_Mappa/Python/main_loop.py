@@ -9,9 +9,9 @@ the project.
 This is the newest version of the file.
 """
 
-import plant_modules # All functions that are being used
-import CoT # Communication module with Circus of Things
-import terminal_messages # Function for Serial monitor / Console
+import plant_modules            # All functions that are being used
+import CoT                      # Communication module with Circus of Things
+import terminal_messages        # Function for Serial monitor / Console
 import json
 from datetime import datetime
 import time
@@ -26,6 +26,7 @@ while True:
     """
     Main loop of the system
     """
+    
     # Checks the signals from Circus of Things, to see if user wants to update CoT with chosen plant configuration.
     new_plant_cot = CoT.new_plant_configuration_key2.get()['Value']
     
@@ -69,15 +70,21 @@ while True:
 
 
     #### Serial monitor ####--------------------------------------------------------------------------------------------
+
     print('##########################################################')
     print('PLANT STATUSES:                           CLOCK:', datetime.fromtimestamp(int(time.time())).strftime('%H:%M:%S'))
+
     for plant_name in range(1, 9):
         if plant_dictionary[str(plant_name)]['active_status']:
+ 
             print('\n  Plant', str(plant_name) +':     ', terminal_messages.plant_checktime_left(str(plant_name)))
+
             print('  Soil:', int(plant_dictionary[str(plant_name)]['soil_value']), '     Threshold:', int(plant_dictionary[str(plant_name)]['soil_requirement']))
+
             print('  Pump:', plant_dictionary[str(plant_name)]['pump_state'], '      Last given water:', datetime.fromtimestamp(plant_dictionary[str(plant_name)]['last_water']).strftime('%H:%M:%S %d/%m-%Y'))
 
             print('\n  Lux:', int(plant_dictionary[str(plant_name)]['lux_value']), '   Threshold:', int(plant_dictionary[str(plant_name)]['lux_requirement']))
+
             print('  Light:', plant_dictionary[str(plant_name)]['light_state'])
 
         else:

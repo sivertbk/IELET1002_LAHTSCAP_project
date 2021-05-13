@@ -16,6 +16,7 @@ def plant_checktime_left(plant_name):
     '''
     function gives time left until watering if in soil control.
     '''
+    
     current_time = int(time.time())
     soil_time_tracker = plant_modules.soil_time_tracker[str(plant_name)]
     control_wait_time = plant_modules.plant_soil_check_control_time
@@ -27,9 +28,10 @@ def plant_checktime_left(plant_name):
     if plant_modules.soil_control[str(plant_name)] == False:
         message = ('Soil control time set to: '+ str(control_wait_time)+ ' seconds.')
         return message
+    
     else:
-        message = ('Activate pump in: '+ datetime.fromtimestamp(time_left).strftime('%M:%S'))
-    return message
+        message = ('Activate pump in: '+ datetime.fromtimestamp(time_left).strftime('%M:%S'))        
+        return message
 
 
 

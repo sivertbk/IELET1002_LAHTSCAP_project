@@ -155,18 +155,21 @@ def encode_plant_system_states(plant_dictionary, plant_name):
     This function takes a plant's inputs(pump, light, etc.) and arranges it to an array ready to be sent to CoT.
     First number in return value represents plant number so the value always stays the same length.
     """
+    
     state_value = ''
     array = [int(plant_name)]
-    # get statuses and store value in array
+    
+    # Get statuses and store value in array
     array.append(plant_dictionary[str(plant_name)]['pump_state'])
     array.append(plant_dictionary[str(plant_name)]['light_state'])
     array.append(plant_dictionary[str(plant_name)]['temperature_state'])
     array.append(plant_dictionary[str(plant_name)]['humidity_state'])
     array.append(plant_dictionary[str(plant_name)]['water_level_state'])
 
-    # make array into a value to be sent
+    # Make array into a value to be sent
     for i in range(0,len(array)):
         state_value += str(array[i])
+        
     return int(state_value)
 
 
@@ -176,11 +179,14 @@ def decode_plant_system_states(plant_name, state = 'default'):
     Second argument takes plant state as keyword and returns state value for given plant state. If second argument is ignored,
     return plant's whole dictionary with all the states.
     """
-    # get input state array for plant
+    
+    # Get input state array for plant
     system_state_array = int(plant_state_array_list[int(plant_name)-1].get()['Value'])
-    # separate digits in input state array into list as string
+    
+    # Separate digits in input state array into list as string
     system_state_list = [str(i) for i in str(system_state_array)]
-    # arrange all the digits in correct posision in dictionary and convert into integers again.
+    
+    # Arrange all the digits in correct posision in dictionary and convert into integers again.
     system_state_dict = {'plant':int(system_state_list[0]),
                         'pump_state':int("".join(system_state_list[1])),
                         'light_state':int("".join(system_state_list[2])),
@@ -188,7 +194,8 @@ def decode_plant_system_states(plant_name, state = 'default'):
                         'humid_state':int("".join(system_state_list[4])),
                         'water_level_state':int("".join(system_state_list[5]))
                         }
-    # return whole dictionary if second argument is not given
+    
+    # Return whole dictionary if second argument is not given
     if state == 'default':
         return system_state_dict
     else:
@@ -202,11 +209,14 @@ def decode_sensor_values(plant_name, sensor = 'default'):
     Second argument takes sensor as keyword and returns value for given sensor. If second argument is ignored, return
     plants whole dictionary with all sensor values.
     """
-    # get sensor value array for plant
+    
+    # Get sensor value array for plant
     plant_sensor_array = int(plant_sensor_array_list[int(plant_name)-1].get()['Value'])
-    # separate digits in sensor value array into list as string
+    
+    # Separate digits in sensor value array into list as string
     sensor_values_list = [str(i) for i in str(plant_sensor_array)]
-    # arrange all the digits in correct posision in dictionary and convert into integers again.
+    
+    # Arrange all the digits in correct posision in dictionary and convert into integers again.
     sensor_values_dict = {'plant':int(sensor_values_list[0]),
                           'soil':int("".join(sensor_values_list[1:4])),
                           'lux':int("".join(sensor_values_list[4:10])),
@@ -214,7 +224,7 @@ def decode_sensor_values(plant_name, sensor = 'default'):
                           'humid':int("".join(sensor_values_list[13:16])),
                           'water_level':int("".join(sensor_values_list[16:]))
                           }
-    # return whole dictionary if second argument is not given
+    # Return whole dictionary if second argument is not given
     if sensor == 'default':
         return sensor_values_dict
     else:
