@@ -161,7 +161,7 @@ void setup(){
       
       // Finds average of all the values collected
       soil_avg = find_avg(soil);
-      uv_avg = find_avg(uv);
+    //uv_avg = find_avg(uv);
       waterlevel_avg = find_avg(waterlevel);
       lux_avg = find_avg(lux);
       temperature_avg = find_avg(temperature);
@@ -169,7 +169,7 @@ void setup(){
 
       // Remembering the values for LCD
       last_soil_val = soil_avg;
-      last_uv_val = uv_avg;
+    //last_uv_val = uv_avg;
       last_humidity_val = humidity_avg;
       last_temperature_val = temperature_avg;
       last_lux_val = lux_avg;
@@ -179,7 +179,7 @@ void setup(){
       circusESP32.begin();
 
       circusESP32.write(soilsensor_key1, soil_avg, token1);
-      circusESP32.write(uvsensor_key1, uv_avg, token1);
+    //circusESP32.write(uvsensor_key1, uv_avg, token1);
       circusESP32.write(temperature_key1, temperature_avg, token1);
       circusESP32.write(humidity_key1, humidity_avg, token1);
       circusESP32.write(luxsensor_key1, lux_avg, token1);
