@@ -1,0 +1,4 @@
+Denne mappen inneholder en video tatt 10.05.2021.
+Videoen er tatt under feilsøking av problemet med at ESP-en skrur seg av etter en viss tid. 
+Videoen viser hvordan ESP delen fungerer, merk at i den endelige koden har vi tatt vekk all Serial prints 
+dermed er ikke det som vises på skjermen representativt i forrhold til koden vi leverer
